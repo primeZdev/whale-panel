@@ -201,23 +201,16 @@ export const superadminAPI = {
         return response.data.data || []
     },
 }
-function generateUUID(): string {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-        const r = Math.random() * 16 | 0
-        const v = c === 'x' ? r : (r & 0x3 | 0x8)
-        return v.toString(16)
-    })
-}
 
-// Helper function to generate random sub_id (8 random characters)
+// Helper function to generate random sub_id (16 random characters)
 function generateSubId(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+    const bytes = crypto.getRandomValues(new Uint8Array(16))
     let result = ''
-    for (let i = 0; i < 8; i++) {
-        result += chars.charAt(Math.floor(Math.random() * chars.length))
+    for (const b of bytes) {
+        result += chars[b % chars.length]
     }
-    // Ensure no leading or trailing slashes
-    return result.replace(/^\/+|\/+$/g, '')
+    return result
 }
 
 // User API
@@ -225,7 +218,7 @@ export const userAPI = {
     createUser: async (email: string, totalGb: number, expiryDatetime?: string | null): Promise<ClientsOutput> => {
         const submitData = {
             email,
-            id: generateUUID(),
+            id: crypto.randomUUID(),
             enable: true,
             expiry_time: expiryDatetime ? new Date(expiryDatetime + 'T00:00:00').getTime() : 0,
             total: Math.floor(totalGb * 1024 * 1024 * 1024),
