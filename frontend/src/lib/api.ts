@@ -209,7 +209,7 @@ function generateUUID(): string {
     })
 }
 
-// Helper function to generate random sub_id (8 random characters)
+// Helper function to generate random sub_id (16 random characters)
 function generateSubId(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let result = ''
