@@ -213,7 +213,7 @@ function generateUUID(): string {
 function generateSubId(): string {
     const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
     let result = ''
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 16; i++) {
         result += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     // Ensure no leading or trailing slashes
