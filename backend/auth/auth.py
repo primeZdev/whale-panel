@@ -45,6 +45,16 @@ def get_current_admin(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
 
+def get_current_superadmin(admin: dict = Depends(get_current_admin)):
+    """Verify that the current user is a superadmin"""
+    if admin.get("role") != "superadmin":
+        raise JSONResponse(
+            status_code=status.HTTP_403_FORBIDDEN,
+            content={"success": False, "message": "Access denied. Only superadmin can access this endpoint"},
+        )
+    return admin
+
+
 @router.post("/login", description="Admin login")
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)

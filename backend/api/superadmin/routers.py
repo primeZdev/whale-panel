@@ -11,12 +11,17 @@ from backend.services import create_new_panel, update_a_panel
 from backend.services.marzban.api import APIService as MarzbanAPI
 from backend.utils.logger import logger, get_10_logs
 from backend.utils.backup import restore_database
+from backend.auth.auth import get_current_superadmin
 
 router = APIRouter(prefix="/superadmin", tags=["superadmin"])
 
 
 @router.post("/admin", description="create a new admin", response_model=ResponseModel)
-async def create_admin(admin_input: AdminInput, db: Session = Depends(get_db)):
+async def create_admin(
+    admin_input: AdminInput,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     if crud.get_admin_by_username(db, admin_input.username):
         logger.warning(
             f"Attempt to create admin with duplicate username: {admin_input.username}"
@@ -39,7 +44,10 @@ async def create_admin(admin_input: AdminInput, db: Session = Depends(get_db)):
 
 @router.put("/admin/{admin_id}", response_model=ResponseModel)
 async def update_admin(
-    admin_id: int, admin_input: AdminUpdateInput, db: Session = Depends(get_db)
+    admin_id: int,
+    admin_input: AdminUpdateInput,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
 ):
     if not crud.get_admin_by_username(db, admin_input.username):
         return JSONResponse(
@@ -58,7 +66,11 @@ async def update_admin(
 
 
 @router.delete("/admin/{admin_id}", response_model=ResponseModel)
-async def delete_admin(admin_id: int, db: Session = Depends(get_db)):
+async def delete_admin(
+    admin_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     remove_admin = crud.remove_admin(db, admin_id)
     if not remove_admin:
         logger.warning(f"Attempt to delete non-existent admin with id: {admin_id}")
@@ -77,7 +89,11 @@ async def delete_admin(admin_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/admin/{admin_id}/status", response_model=ResponseModel)
-async def toggle_admin_status(admin_id: int, db: Session = Depends(get_db)):
+async def toggle_admin_status(
+    admin_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     status_changed = crud.change_admin_status(db, admin_id)
     if not status_changed:
         return JSONResponse(
@@ -94,7 +110,11 @@ async def toggle_admin_status(admin_id: int, db: Session = Depends(get_db)):
 
 
 @router.post("/panel", description="add a new panel", response_model=ResponseModel)
-async def create_panel(panel_input: PanelInput, db: Session = Depends(get_db)):
+async def create_panel(
+    panel_input: PanelInput,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     if crud.get_panel_by_name(db, panel_input.name):
         logger.warning(
             f"Attempt to create panel with duplicate name: {panel_input.name}"
@@ -130,7 +150,10 @@ async def create_panel(panel_input: PanelInput, db: Session = Depends(get_db)):
 
 @router.put("/panel/{panel_id}", response_model=ResponseModel)
 async def update_panel(
-    panel_id: int, panel_input: PanelInput, db: Session = Depends(get_db)
+    panel_id: int,
+    panel_input: PanelInput,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
 ):
     if not crud.get_panel_by_id(db, panel_id):
         logger.warning(f"Attempt to update non-existent panel with id: {panel_id}")
@@ -163,7 +186,11 @@ async def update_panel(
 
 
 @router.delete("/panel/{panel_id}", response_model=ResponseModel)
-async def delete_panel(panel_id: int, db: Session = Depends(get_db)):
+async def delete_panel(
+    panel_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     remove_panel = crud.remove_panel(db, panel_id)
     if not remove_panel:
         logger.warning(f"Attempt to delete non-existent panel with id: {panel_id}")
@@ -182,7 +209,11 @@ async def delete_panel(panel_id: int, db: Session = Depends(get_db)):
 
 
 @router.patch("/panel/{panel_id}/status", response_model=ResponseModel)
-async def toggle_panel_status(panel_id: int, db: Session = Depends(get_db)):
+async def toggle_panel_status(
+    panel_id: int,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     status_changed = crud.change_panel_status(db, panel_id)
     if not status_changed:
         return JSONResponse(
@@ -199,7 +230,11 @@ async def toggle_panel_status(panel_id: int, db: Session = Depends(get_db)):
 
 
 @router.get("/panel/{panel_name}/inbounds")
-async def get_panel_inbounds(panel_name: str, db: Session = Depends(get_db)):
+async def get_panel_inbounds(
+    panel_name: str,
+    db: Session = Depends(get_db),
+    admin: dict = Depends(get_current_superadmin),
+):
     """Get available inbounds for a Marzban panel"""
     panel = crud.get_panel_by_name(db, panel_name)
     if not panel:
@@ -242,7 +277,7 @@ async def get_panel_inbounds(panel_name: str, db: Session = Depends(get_db)):
 
 
 @router.get("/backup", description="Download database backup")
-async def download_backup():
+async def download_backup(admin: dict = Depends(get_current_superadmin)):
     """Download the current database as a backup file"""
     db_path = "/app/data/walpanel.db"
     if not os.path.exists(db_path):
@@ -266,7 +301,9 @@ async def download_backup():
     description="Restore database from uploaded file",
     response_model=ResponseModel,
 )
-async def restore_backup(file: UploadFile = File(...)):
+async def restore_backup(
+    file: UploadFile = File(...), admin: dict = Depends(get_current_superadmin)
+):
     """Restore database from an uploaded backup file"""
     if not file.filename.endswith(".db"):
         return JSONResponse(
@@ -297,7 +334,7 @@ async def restore_backup(file: UploadFile = File(...)):
 
 
 @router.get("/logs", description="Get application logs")
-async def get_logs():
+async def get_logs(admin: dict = Depends(get_current_superadmin)):
     """Get the last 10 application logs"""
     try:
         logs = get_10_logs()
