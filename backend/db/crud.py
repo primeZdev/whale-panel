@@ -1,6 +1,7 @@
+from datetime import datetime
 from sqlalchemy.orm import Session
 
-from backend.db.model import Admins, Panels
+from backend.db.model import Admins, Panels, News
 from backend.schema._input import AdminInput, AdminUpdateInput, PanelInput
 from backend.auth.hash import hash_password
 
@@ -144,3 +145,21 @@ def change_panel_status(db: Session, panel_id: int) -> bool:
         db.commit()
         return True
     return False
+
+
+def get_news(db: Session):
+    return db.query(News).all()
+
+
+def add_news(db: Session, message: str) -> None:
+    news = News(message=message, created_at=datetime.utcnow())
+    db.add(news)
+    db.commit()
+    db.refresh(news)
+
+
+def delete_news(db: Session, id: int) -> None:
+    news = db.query(News).filter(News.id == id).first()
+    if news:
+        db.delete(news)
+        db.commit()
