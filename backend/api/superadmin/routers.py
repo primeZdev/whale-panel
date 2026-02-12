@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 import os
 
 from backend.schema.output import ResponseModel
-from backend.schema._input import AdminInput, AdminUpdateInput, PanelInput
+from backend.schema._input import AdminInput, AdminUpdateInput, PanelInput, NewsInput
 from backend.db import crud
 from backend.db.engin import get_db
 from backend.services import create_new_panel, update_a_panel
@@ -350,5 +350,87 @@ async def get_logs(admin: dict = Depends(get_current_superadmin)):
             content={
                 "success": False,
                 "message": f"Failed to retrieve logs: {str(e)}",
+            },
+        )
+
+
+@router.get("/news", description="Get news")
+async def get_news(db: Session = Depends(get_db)):
+    """Get the news"""
+    try:
+        news = crud.get_news(db)
+        return ResponseModel(
+            success=True,
+            message="News retrieved successfully",
+            data=list(
+                map(
+                    lambda x: {
+                        "id": x.id,
+                        "message": x.message,
+                        "created_at": x.created_at,
+                    },
+                    news,
+                )
+            ),
+        )
+    except Exception as e:
+        logger.error(f"Failed to retrieve news: {str(e)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": f"Failed to retrieve news: {str(e)}",
+            },
+        )
+
+
+@router.post("/news", description="Add news", response_model=ResponseModel)
+async def add_news(news: NewsInput, db: Session = Depends(get_db)):
+    """Add news"""
+    try:
+        crud.add_news(db, news.news)
+        return ResponseModel(
+            success=True,
+            message="News added successfully",
+        )
+    except Exception as e:
+        logger.error(f"Failed to add news: {str(e)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": f"Failed to add news: {str(e)}",
+            },
+        )
+
+
+@router.delete(
+    "/news/{news_id}", description="Delete news", response_model=ResponseModel
+)
+async def delete_news(news_id: int, db: Session = Depends(get_db)):
+    """Delete news by ID"""
+    try:
+        news = db.query(crud.News).filter(crud.News.id == news_id).first()
+        if not news:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={
+                    "success": False,
+                    "message": "News not found",
+                },
+            )
+        db.delete(news)
+        db.commit()
+        return ResponseModel(
+            success=True,
+            message="News deleted successfully",
+        )
+    except Exception as e:
+        logger.error(f"Failed to delete news: {str(e)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "success": False,
+                "message": f"Failed to delete news: {str(e)}",
             },
         )

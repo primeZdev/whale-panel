@@ -1,3 +1,4 @@
+from datetime import datetime
 from .engin import Base
 from sqlalchemy import Column, DateTime, Integer, String, Boolean, BigInteger
 
@@ -30,3 +31,10 @@ class Panels(Base):
     username = Column(String, nullable=False)
     password = Column(String, nullable=False)
     is_active = Column(Boolean, default=True)
+
+class News(Base):
+    __tablename__ = "news"
+
+    id = Column(Integer, primary_key=True, index=True)
+    message = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.date)

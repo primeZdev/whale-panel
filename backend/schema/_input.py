@@ -60,3 +60,9 @@ class ClientUpdateInput(BaseModel):
     total: float = Field(ge=104857600, description="Minimum 0.1 GB (100 MB)")
     sub_id: str
     flow: str = ""
+
+
+class NewsInput(BaseModel):
+    news: str = Field(
+        max_length=250, description="News content must be 250 characters or less"
+    )
