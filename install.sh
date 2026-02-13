@@ -112,11 +112,15 @@ install_command() {
 cd /opt/whale-panel
 
 case "$1" in
+    edit-env)
+        nano .env
+        ;;
     update)
         echo "Updating Whale Panel..."
         docker compose pull
         docker compose up -d
         echo "Update complete!"
+        docker compose logs -f
         ;;
     stop)
         docker compose down
@@ -129,6 +133,7 @@ case "$1" in
     restart)
         docker compose restart
         echo "Whale Panel restarted"
+        docker compose logs -f
         ;;
     logs)
         docker compose logs -f
@@ -140,7 +145,7 @@ case "$1" in
         echo "Whale Panel uninstalled"
         ;;
     *)
-        echo "Usage: whale-panel {update|start|stop|restart|logs|uninstall}"
+        echo "Usage: whale-panel {edit-env|update|start|stop|restart|logs|uninstall}"
         ;;
 esac
 SCRIPT
