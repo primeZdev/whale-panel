@@ -82,7 +82,7 @@ export function UserFormDialog({ isOpen, onClose, onSuccess, user }: UserFormDia
                     data.totalGb,
                     expiryForSubmit,
                     user.sub_id || '',
-                    user.status,
+                    true,
                     user.flow || '',
                     user.id?.toString()
                 )
