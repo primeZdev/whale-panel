@@ -67,6 +67,7 @@ After installation, use these commands:
 | Command | Description |
 |---------|-------------|
 | `whale-panel update` | Pull latest image & restart |
+| `whale-panel edit-env` | Edit .env file |
 | `whale-panel start` | Start the panel |
 | `whale-panel stop` | Stop the panel |
 | `whale-panel restart` | Restart the panel |
