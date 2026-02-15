@@ -923,7 +923,7 @@ function MobileUserCard({
                     {subUrl && user.sub_id && (
                         <div className="p-3 bg-background rounded-md border">
                             <div className="text-xs text-muted-foreground mb-1">Subscription Link:</div>
-                            <div className="text-xs font-mono break-all">{`${subUrl}/${user.sub_id?.replace(new RegExp(`^${subUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`), '').replace(/^\/+/, '')}`}</div>
+                            {buildSubUrl(subUrl, user.sub_id)}
                         </div>
                     )}
 
