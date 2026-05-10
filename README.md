@@ -4,23 +4,18 @@
   </a>
 
 
-  # **Whale-Panel**
+  # **Whale Panel**
   <p align="center">
     <a href="https://t.me/primez_dev" target="_blank">
       <img src="https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram" alt="Telegram Channel">
     </a>
-    <a href="https://t.me/MrOcean_ch/201" target="_blank">
-      <img src="https://img.shields.io/badge/Monthly%20Sponsor-MrOcean%20Channel-blue?style=for-the-badge&logo=telegram" alt="Monthly Sponsor">
-    </a>
   <p align="center" dir="rtl">
-    <strong>اسپانسر این ماه: کانال MrOcean</strong> فروش سرور با شروع قیمت 199 تومان <a href="https://t.me/MrOcean_ch/201" target="_blank">مشاهده کانال تلگرام</a>
-  </p>
   </p>
 </div>
 
 
 
----
+
 
 ## 🎯 Overview
 
