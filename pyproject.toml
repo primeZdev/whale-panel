@@ -1,6 +1,6 @@
 [project]
 name = "whale-panel"
-version = "2.6.21"
+version = "2.6.22"
 description = "A comprehensive admin dashboard system for managing X-UI panels with role-based access control (SuperAdmin and Admin roles)."
 readme = "README.md"
 requires-python = ">=3.12"
