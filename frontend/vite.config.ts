@@ -5,19 +5,27 @@ import fs from 'fs'
 
 // Read URLPATH from root .env file
 function getRootEnvUrlPath(): string {
+    const envFileName = '.env'
+
     const possiblePaths = [
+        path.resolve(process.cwd(), envFileName),
+        path.resolve(__dirname, '../../.env'),
         path.resolve(__dirname, '../.env'),
-        path.resolve(process.cwd(), '.env'),
+        path.resolve(__dirname, envFileName),
     ]
 
     for (const p of possiblePaths) {
         try {
             if (fs.existsSync(p)) {
                 const envContent = fs.readFileSync(p, 'utf-8')
-                const match = envContent.match(/^URLPATH=(.*)$/m)
-                if (match) return match[1].trim()
+
+                const match = envContent.match(/^URLPATH\s*=\s*(.+)$/m)
+                if (match) {
+                    return match[1].trim().replace(/^["']|["']$/g, '')
+                }
             }
-        } catch {}
+        } catch (err) {
+        }
     }
 
     return 'dashboard'
