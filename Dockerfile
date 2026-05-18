@@ -12,6 +12,9 @@ COPY frontend/package*.json frontend/
 COPY frontend/package-lock.json frontend/
 COPY frontend/ frontend/
 
+# Copy root .env into frontend build for URLPATH
+COPY .env frontend/.env
+
 RUN cd frontend && npm install && npm run build
 
 FROM python:3.12-slim
