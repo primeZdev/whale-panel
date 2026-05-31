@@ -277,12 +277,10 @@ export function AdminFormDialog({
                 marzban_inbounds: Object.keys(resolvedInbounds).length > 0
                     ? JSON.stringify(resolvedInbounds)
                     : null,
-                marzban_password: selectedPanel?.panel_type === 'marzban' ? passwordToSend : undefined,
             }
 
             if (!passwordToSend) {
                 delete submitData.password
-                delete submitData.marzban_password
             }
 
             if (admin?.id) {
@@ -349,11 +347,6 @@ export function AdminFormDialog({
                                 required: admin ? false : 'Password is required',
                             })}
                         />
-                        {watch('panel') && panels.find(p => p.name === watch('panel'))?.panel_type === 'marzban' && (
-                            <p className="text-xs text-muted-foreground">
-                                For Marzban panels, this password must match the same admin username in your Marzban panel.
-                            </p>
-                        )}
                         {errors.password && (
                             <p className="text-sm text-destructive">{errors.password.message}</p>
                         )}

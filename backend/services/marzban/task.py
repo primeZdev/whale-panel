@@ -14,14 +14,9 @@ class AdminTaskService:
         self.panel = crud.get_panel_by_name(db, name=self.admin.panel)
         self.api_service = APIService(
             url=self.panel.url,
-            username=self.admin_username,
-            password=self.admin.marzban_password,
-            inbounds=self.admin.marzban_inbounds,
-        )
-        self.api_service_for_main_tasks = APIService(
-            url=self.panel.url,
             username=self.panel.username,
             password=self.panel.password,
+            inbounds=self.admin.marzban_inbounds,
         )
 
     async def get_all_users(self):
@@ -37,7 +32,7 @@ class AdminTaskService:
 
     async def get_user_by_username(self, username: str) -> dict | bool:
         try:
-            user = await self.api_service_for_main_tasks.get_user(username)
+            user = await self.api_service.get_user(username)
             return user
         except Exception as e:
             logger.error(f"Error retrieving user by username {username}: {str(e)}")

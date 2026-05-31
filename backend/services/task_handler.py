@@ -368,7 +368,7 @@ async def add_new_user(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 content={
                     "success": False,
-                    "message": "Failed to add user to Marzban. Ensure this admin username/password exists in Marzban and inbounds are selected.",
+                    "message": "Failed to add user to Marzban. Check panel connection and selected inbounds.",
                 },
             )
         admin_check.reduce_usage(user_input.total, user_input.total)
