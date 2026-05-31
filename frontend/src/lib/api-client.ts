@@ -45,12 +45,22 @@ function getBaseURL(): string {
     // Response interceptor
     apiClient.interceptors.response.use(
         (response) => response,
-        (error: AxiosError) => {
+        (error: AxiosError<{ message?: string; detail?: string; success?: boolean }>) => {
             // Handle 401 Unauthorized
             if (error.response?.status === 401) {
                 removeToken()
                 window.location.href = '/login'
             }
+
+            const apiMessage =
+                error.response?.data?.message ||
+                error.response?.data?.detail ||
+                error.message
+
+            if (apiMessage) {
+                return Promise.reject(new Error(apiMessage))
+            }
+
             return Promise.reject(error)
         }
     )

@@ -62,7 +62,8 @@ async def update_admin(
     db: Session = Depends(get_db),
     admin: dict = Depends(get_current_superadmin),
 ):
-    if not crud.get_admin_by_username(db, admin_input.username):
+    existing_admin = crud.get_admin_by_username(db, admin_input.username)
+    if not existing_admin or existing_admin.id != admin_id:
         return JSONResponse(
             status_code=status.HTTP_404_NOT_FOUND,
             content={

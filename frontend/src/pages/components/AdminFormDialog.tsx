@@ -69,53 +69,76 @@ export function AdminFormDialog({
     })
 
     useEffect(() => {
+        if (!isOpen) {
+            return
+        }
+
+        if (!admin) {
+            reset()
+            setSelectedInbounds({})
+            setMarzbanInbounds(null)
+            setServerError(null)
+            return
+        }
+
+        setServerError(null)
+        setValue('username', admin.username)
+        setValue('password', '')
+        setValue('panel', admin.panel)
+        setValue('inbound_id', admin.inbound_id || '')
+        setValue('marzban_inbounds', admin.marzban_inbounds)
+        setValue('flow', admin.flow ?? null)
+        setValue('traffic', bytesToGB(admin.traffic))
+        setValue('update_return_traffic', admin.update_return_traffic)
+        setValue('delete_return_traffic', admin.delete_return_traffic)
+        setValue('is_active', admin.is_active)
+
+        if (admin.expiry_date) {
+            try {
+                const expiryRaw = admin.expiry_date.includes('T')
+                    ? admin.expiry_date
+                    : `${admin.expiry_date}T00:00:00`
+                const exp = new Date(expiryRaw)
+                const today = new Date()
+                today.setHours(0, 0, 0, 0)
+                const diffMs = exp.getTime() - today.getTime()
+                const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
+                setValue('expiry_date', diffDays > 0 ? diffDays : 0)
+            } catch (e) {
+                setValue('expiry_date', null)
+            }
+        } else {
+            setValue('expiry_date', null)
+        }
+
+        if (admin.marzban_inbounds) {
+            try {
+                setSelectedInbounds(JSON.parse(admin.marzban_inbounds))
+            } catch (e) {
+                console.error('Failed to parse marzban_inbounds:', e)
+                setSelectedInbounds({})
+            }
+        } else {
+            setSelectedInbounds({})
+        }
+    }, [admin, isOpen, setValue, reset])
+
+    useEffect(() => {
+        if (!isOpen || !admin || panels.length === 0) {
+            return
+        }
+
+        const selectedPanel = panels.find((panel) => panel.name === admin.panel)
+        if (selectedPanel?.panel_type === 'marzban') {
+            loadMarzbanInbounds(admin.panel)
+        }
+    }, [admin, isOpen, panels])
+
+    useEffect(() => {
         if (isOpen) {
             loadPanels()
         }
     }, [isOpen])
-
-    useEffect(() => {
-        if (admin) {
-            setValue('username', admin.username)
-            setValue('password', '') // Don't pre-fill password
-            setValue('panel', admin.panel)
-            setValue('inbound_id', admin.inbound_id || '')
-            setValue('marzban_inbounds', admin.marzban_inbounds)
-            setValue('flow', (admin as any).flow ?? null)
-            setValue('traffic', bytesToGB(admin.traffic))
-            setValue('update_return_traffic', admin.update_return_traffic)
-            setValue('delete_return_traffic', admin.delete_return_traffic)
-            setValue('is_active', admin.is_active)
-            // If admin has an expiry_date (YYYY-MM-DD), convert to remaining days for the input
-            if (admin.expiry_date) {
-                try {
-                    const exp = new Date(admin.expiry_date + 'T00:00:00')
-                    const today = new Date()
-                    today.setHours(0, 0, 0, 0)
-                    const diffMs = exp.getTime() - today.getTime()
-                    const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
-                    setValue('expiry_date', diffDays > 0 ? diffDays : 0)
-                } catch (e) {
-                    setValue('expiry_date', admin.expiry_date)
-                }
-            } else {
-                setValue('expiry_date', null)
-            }
-
-            // Parse marzban_inbounds if available
-            if (admin.marzban_inbounds) {
-                try {
-                    setSelectedInbounds(JSON.parse(admin.marzban_inbounds))
-                } catch (e) {
-                    console.error('Failed to parse marzban_inbounds:', e)
-                }
-            }
-        } else {
-            reset()
-            setSelectedInbounds({})
-            setMarzbanInbounds(null)
-        }
-    }, [admin, isOpen, setValue, reset])
 
     const loadPanels = async () => {
         try {
@@ -143,17 +166,31 @@ export function AdminFormDialog({
     }
 
     const handlePanelChange = (panelName: string) => {
+        const currentPanel = watch('panel')
         setValue('panel', panelName)
         const selectedPanel = panels.find(p => p.name === panelName)
 
-        // Reset inbound selections
-        setSelectedInbounds({})
-        setMarzbanInbounds(null)
+        if (panelName !== currentPanel) {
+            setSelectedInbounds({})
+            setMarzbanInbounds(null)
+        }
 
-        // Load inbounds if it's a Marzban panel
         if (selectedPanel?.panel_type === 'marzban') {
             loadMarzbanInbounds(panelName)
         }
+    }
+
+    const selectAllInbounds = () => {
+        if (!marzbanInbounds) return
+        setSelectedInbounds(
+            Object.fromEntries(
+                Object.entries(marzbanInbounds).map(([protocol, tags]) => [protocol, [...tags]])
+            )
+        )
+    }
+
+    const deselectAllInbounds = () => {
+        setSelectedInbounds({})
     }
 
     const toggleInbound = (protocol: string, tag: string) => {
@@ -201,7 +238,20 @@ export function AdminFormDialog({
                 return
             }
 
-            if (selectedPanel.panel_type === 'marzban' && Object.keys(selectedInbounds).length === 0) {
+            const resolvedInbounds =
+                Object.keys(selectedInbounds).length > 0
+                    ? selectedInbounds
+                    : admin?.marzban_inbounds
+                        ? (() => {
+                            try {
+                                return JSON.parse(admin.marzban_inbounds) as Record<string, string[]>
+                            } catch {
+                                return {}
+                            }
+                        })()
+                        : {}
+
+            if (selectedPanel.panel_type === 'marzban' && Object.keys(resolvedInbounds).length === 0) {
                 setServerError('Please select at least one Marzban inbound')
                 return
             }
@@ -224,10 +274,10 @@ export function AdminFormDialog({
             const submitData: any = {
                 ...data,
                 expiry_date: expiryForSubmit,
-                marzban_inbounds: Object.keys(selectedInbounds).length > 0
-                    ? JSON.stringify(selectedInbounds)
+                marzban_inbounds: Object.keys(resolvedInbounds).length > 0
+                    ? JSON.stringify(resolvedInbounds)
                     : null,
-                marzban_password: selectedPanel?.panel_type === 'marzban' ? passwordToSend : null,
+                marzban_password: selectedPanel?.panel_type === 'marzban' ? passwordToSend : undefined,
             }
 
             if (!passwordToSend) {
@@ -299,6 +349,11 @@ export function AdminFormDialog({
                                 required: admin ? false : 'Password is required',
                             })}
                         />
+                        {watch('panel') && panels.find(p => p.name === watch('panel'))?.panel_type === 'marzban' && (
+                            <p className="text-xs text-muted-foreground">
+                                For Marzban panels, this password must match the same admin username in your Marzban panel.
+                            </p>
+                        )}
                         {errors.password && (
                             <p className="text-sm text-destructive">{errors.password.message}</p>
                         )}
@@ -331,7 +386,31 @@ export function AdminFormDialog({
                     {/* Marzban Inbounds Selection */}
                     {watch('panel') && panels.find(p => p.name === watch('panel'))?.panel_type === 'marzban' && (
                         <div className="space-y-2">
-                            <Label>Marzban Inbounds *</Label>
+                            <div className="flex items-center justify-between gap-2">
+                                <Label>Marzban Inbounds *</Label>
+                                {marzbanInbounds && (
+                                    <div className="flex gap-2">
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="xs"
+                                            onClick={selectAllInbounds}
+                                            disabled={isSubmitting}
+                                        >
+                                            Select All
+                                        </Button>
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            size="xs"
+                                            onClick={deselectAllInbounds}
+                                            disabled={isSubmitting}
+                                        >
+                                            Clear
+                                        </Button>
+                                    </div>
+                                )}
+                            </div>
                             {loadingInbounds ? (
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                     <Loader2 className="h-4 w-4 animate-spin" />

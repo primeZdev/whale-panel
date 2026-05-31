@@ -16,6 +16,8 @@ class AdminOutput(BaseModel):
     is_active: bool
     panel: str
     inbound_id: Optional[str]
+    marzban_inbounds: Optional[str] = None
+    flow: Optional[str] = None
     traffic: float
     update_return_traffic: bool
     delete_return_traffic: bool
@@ -23,6 +25,22 @@ class AdminOutput(BaseModel):
 
     class Config:
         from_attributes = True
+
+    @classmethod
+    def from_orm(cls, admin):
+        return cls(
+            id=admin.id,
+            username=admin.username,
+            is_active=admin.is_active,
+            panel=admin.panel,
+            inbound_id=admin.inbound_id,
+            marzban_inbounds=admin.marzban_inbounds,
+            flow=admin.inbound_flow,
+            traffic=admin.traffic,
+            update_return_traffic=admin.update_return_traffic,
+            delete_return_traffic=admin.delete_return_traffic,
+            expiry_date=admin.expiry_date,
+        )
 
 
 class PanelOutput(BaseModel):

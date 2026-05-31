@@ -64,8 +64,10 @@ def update_admin_values(
         admin.panel = admin_input.panel
         admin.inbound_id = admin_input.inbound_id
         admin.inbound_flow = admin_input.flow
-        admin.marzban_inbounds = admin_input.marzban_inbounds
-        admin.marzban_password = admin_input.marzban_password
+        if admin_input.marzban_inbounds is not None:
+            admin.marzban_inbounds = admin_input.marzban_inbounds
+        if admin_input.marzban_password is not None:
+            admin.marzban_password = admin_input.marzban_password
         admin.traffic = admin_input.traffic
         admin.update_return_traffic = admin_input.update_return_traffic
         admin.delete_return_traffic = admin_input.delete_return_traffic
