@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { adminSchema, AdminFormData, AdminOutput } from '@/types'
 import { adminAPI, dashboardAPI } from '@/lib/api'
@@ -183,6 +183,29 @@ export function AdminFormDialog({
             // Get selected panel type
             const selectedPanel = panels.find(p => p.name === data.panel)
 
+            if (!selectedPanel) {
+                setServerError('Please select a valid panel')
+                return
+            }
+
+            if (!admin && !data.password?.trim()) {
+                setServerError('Password is required')
+                return
+            }
+
+            if (
+                ['3x-ui', 'tx-ui'].includes(selectedPanel.panel_type) &&
+                (data.flow === null || data.flow === undefined || String(data.flow).trim() === '')
+            ) {
+                setServerError('Flow is required for 3x-ui and tx-ui panels')
+                return
+            }
+
+            if (selectedPanel.panel_type === 'marzban' && Object.keys(selectedInbounds).length === 0) {
+                setServerError('Please select at least one Marzban inbound')
+                return
+            }
+
             // Convert expiry days (number) to date string YYYY-MM-DD for backend
             let expiryForSubmit: string | null = null
             if (data.expiry_date === null || data.expiry_date === undefined || data.expiry_date === '') {
@@ -227,6 +250,11 @@ export function AdminFormDialog({
         }
     }
 
+    const onInvalid = (formErrors: FieldErrors<AdminFormData>) => {
+        const firstError = Object.values(formErrors).find((error) => error?.message)
+        setServerError(firstError?.message?.toString() || 'Please fix the highlighted form errors')
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -237,7 +265,7 @@ export function AdminFormDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
                     {serverError && (
                         <div className="flex items-gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                             <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
@@ -455,17 +483,17 @@ export function AdminFormDialog({
                             <span className="text-sm">Active</span>
                         </label>
                     </div>
-                </form>
 
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isSubmitting ? 'Saving...' : admin ? 'Update Admin' : 'Create Admin'}
-                    </Button>
-                </DialogFooter>
+                    <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSubmitting ? 'Saving...' : admin ? 'Update Admin' : 'Create Admin'}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, FieldErrors } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { panelSchema, PanelFormData, PanelOutput } from '@/types'
 import { panelAPI } from '@/lib/api'
@@ -120,6 +120,11 @@ export function PanelFormDialog({
         }
     }
 
+    const onInvalid = (formErrors: FieldErrors<PanelFormData>) => {
+        const firstError = Object.values(formErrors).find((error) => error?.message)
+        setServerError(firstError?.message?.toString() || 'Please fix the highlighted form errors')
+    }
+
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
             <DialogContent className="max-h-[90vh] overflow-y-auto">
@@ -130,7 +135,7 @@ export function PanelFormDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={handleSubmit(onSubmit, onInvalid)} className="space-y-4">
                     {serverError && (
                         <div className="flex items-gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
                             <AlertCircle className="h-4 w-4 mr-2 flex-shrink-0 mt-0.5" />
@@ -299,17 +304,17 @@ export function PanelFormDialog({
                             <span className="text-sm">Active</span>
                         </label>
                     </div>
-                </form>
 
-                <DialogFooter className="gap-2 sm:gap-0">
-                    <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
-                        {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        {isSubmitting ? 'Saving...' : panel ? 'Update Panel' : 'Create Panel'}
-                    </Button>
-                </DialogFooter>
+                    <DialogFooter className="gap-2 sm:gap-0 pt-2">
+                        <Button type="button" variant="outline" onClick={onClose} disabled={isSubmitting}>
+                            Cancel
+                        </Button>
+                        <Button type="submit" disabled={isSubmitting}>
+                            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isSubmitting ? 'Saving...' : panel ? 'Update Panel' : 'Create Panel'}
+                        </Button>
+                    </DialogFooter>
+                </form>
             </DialogContent>
         </Dialog>
     )

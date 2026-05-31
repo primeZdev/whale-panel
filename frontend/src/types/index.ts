@@ -48,13 +48,13 @@ export const adminSchema = z.object({
         .min(1, 'Panel selection is required'),
 
     inbound_id: z
-        .string()
-        .regex(
-            /^\d+(,\d+)*$/,
-            'Inbound IDs must be like: 1,2,3'
-        )
+        .union([
+            z.literal(''),
+            z.string().regex(/^\d+(,\d+)*$/, 'Inbound IDs must be like: 1,2,3'),
+        ])
         .optional()
-        .nullable(),
+        .nullable()
+        .transform((val) => (val === '' || val === undefined ? null : val)),
 
     marzban_inbounds: z
         .string()
@@ -88,20 +88,15 @@ export const adminSchema = z.object({
         .boolean()
         .default(true),
 
-    expiry_date: z
-        .union([z.string(), z.number()])
-        .nullable()
-        .optional(),
+    expiry_date: z.preprocess(
+        (val) => {
+            if (val === '' || val === null || val === undefined) return null
+            if (typeof val === 'number' && Number.isNaN(val)) return null
+            return val
+        },
+        z.union([z.string(), z.number().min(0, 'Expiry days cannot be negative')]).nullable().optional()
+    ),
 })
-    .superRefine((val, ctx) => {
-        // If panel is 3x-ui, flow must be provided (not null/empty)
-        if (val.panel === '3x-ui') {
-            const f = val.flow
-            if (f === null || f === undefined || String(f).trim() === '') {
-                ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Flow is required for 3x-ui panels', path: ['flow'] })
-            }
-        }
-    })
 
 export type AdminFormData = z.infer<typeof adminSchema>
 
