@@ -115,6 +115,7 @@ export interface AdminOutput {
     marzban_password: string | null
     flow?: string | null
     traffic: number
+    initial_traffic: number
     update_return_traffic: boolean | false
     delete_return_traffic: boolean | false
     expiry_date: string | null
@@ -244,6 +245,7 @@ export interface LoginResponse {
 
 export interface DashboardData {
     remaining_traffic?: number
+    initial_traffic?: number
     expiry_time?: string
     news?: string[]
     sub_url?: string

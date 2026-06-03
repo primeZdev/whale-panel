@@ -278,7 +278,9 @@ function AdminDetailsRow({
                 <TableCell className="text-sm">{admin.panel}</TableCell>
                 <TableCell>
                     <div className="text-sm font-medium">
-                        {bytesToGB(admin.traffic).toFixed(2)} GB
+                        {admin.initial_traffic !== undefined
+                            ? `${bytesToGB(admin.traffic).toFixed(2)} / ${bytesToGB(admin.initial_traffic).toFixed(2)} GB`
+                            : `${bytesToGB(admin.traffic).toFixed(2)} GB`}
                     </div>
                 </TableCell>
                 <TableCell>
@@ -367,11 +369,12 @@ function MobileAdminCard({
                         <span className="text-xs text-muted-foreground">{admin.panel}</span>
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground">
-                            {bytesToGB(admin.traffic).toFixed(1)} GB
+                            {admin.initial_traffic !== undefined
+                                ? `${bytesToGB(admin.traffic).toFixed(1)} / ${bytesToGB(admin.initial_traffic).toFixed(1)} GB`
+                                : `${bytesToGB(admin.traffic).toFixed(1)} GB`}
                         </span>
                     </div>
                 </div>
-
                 <div className="flex flex-col items-end gap-1 shrink-0">
                     <Badge variant={admin.is_active ? 'default' : 'destructive'} className="text-xs">
                         {admin.is_active ? 'Active' : 'Inactive'}
@@ -391,7 +394,11 @@ function MobileAdminCard({
                     <div className="grid grid-cols-2 gap-3 text-sm">
                         <div>
                             <p className="text-xs text-muted-foreground">Traffic</p>
-                            <p className="font-mono font-medium">{bytesToGB(admin.traffic).toFixed(2)} GB</p>
+                            <p className="font-mono font-medium">
+                                {admin.initial_traffic !== undefined
+                                    ? `${bytesToGB(admin.traffic).toFixed(2)} / ${bytesToGB(admin.initial_traffic).toFixed(2)} GB`
+                                    : `${bytesToGB(admin.traffic).toFixed(2)} GB`}
+                            </p>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Expiry</p>

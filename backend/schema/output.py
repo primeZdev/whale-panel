@@ -17,6 +17,7 @@ class AdminOutput(BaseModel):
     panel: str
     inbound_id: Optional[str]
     traffic: float
+    initial_traffic: float = 0
     update_return_traffic: bool
     delete_return_traffic: bool
     expiry_date: Optional[datetime]

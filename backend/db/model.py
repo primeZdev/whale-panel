@@ -15,6 +15,7 @@ class Admins(Base):
     marzban_inbounds = Column(String, nullable=True)
     marzban_password = Column(String, nullable=True)
     traffic = Column(BigInteger, default=0)
+    initial_traffic = Column(BigInteger, default=0, nullable=True)
     update_return_traffic = Column(Boolean, default=False)
     delete_return_traffic = Column(Boolean, default=False)
     expiry_date = Column(DateTime, nullable=True)

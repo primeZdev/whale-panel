@@ -349,12 +349,16 @@ export function DashboardPage() {
                         <CardContent>
                             <div className="text-2xl font-bold">
                                 {dashboardData.remaining_traffic !== undefined
-                                    ? `${bytesToGB(dashboardData.remaining_traffic).toFixed(2)} GB`
+                                    ? dashboardData.initial_traffic !== undefined
+                                        ? `${bytesToGB(dashboardData.remaining_traffic).toFixed(2)} / ${bytesToGB(dashboardData.initial_traffic).toFixed(2)} GB`
+                                        : `${bytesToGB(dashboardData.remaining_traffic).toFixed(2)} GB`
                                     : 'N/A'}
                             </div>
                             <p className="text-xs text-muted-foreground">
                                 {dashboardData.remaining_traffic !== undefined
-                                    ? formatTraffic(dashboardData.remaining_traffic)
+                                    ? dashboardData.initial_traffic !== undefined
+                                        ? 'Remaining / Initial traffic'
+                                        : formatTraffic(dashboardData.remaining_traffic)
                                     : 'No data'}
                             </p>
                         </CardContent>

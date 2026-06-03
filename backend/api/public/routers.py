@@ -42,6 +42,7 @@ async def read_dashboard_data(
             message="Data retrieved successfully",
             data={
                 "remaining_traffic": admin_data.traffic,
+                "initial_traffic": admin_data.initial_traffic,
                 "expiry_time": admin_data.expiry_date,
                 "news": [news.message for news in news_data],
                 "sub_url": panel_data.sub_url,

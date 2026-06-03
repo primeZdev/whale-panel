@@ -26,6 +26,7 @@ def add_admin(db: Session, admin_input: AdminInput) -> None:
         marzban_inbounds=admin_input.marzban_inbounds,
         marzban_password=admin_input.marzban_password,
         traffic=admin_input.traffic,
+        initial_traffic=admin_input.traffic,
         update_return_traffic=admin_input.update_return_traffic,
         delete_return_traffic=admin_input.delete_return_traffic,
         expiry_date=admin_input.expiry_date,
@@ -67,6 +68,7 @@ def update_admin_values(
         admin.marzban_inbounds = admin_input.marzban_inbounds
         admin.marzban_password = admin_input.marzban_password
         admin.traffic = admin_input.traffic
+        admin.initial_traffic = admin_input.traffic
         admin.update_return_traffic = admin_input.update_return_traffic
         admin.delete_return_traffic = admin_input.delete_return_traffic
         admin.expiry_date = admin_input.expiry_date
