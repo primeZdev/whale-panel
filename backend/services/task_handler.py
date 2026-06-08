@@ -1180,10 +1180,9 @@ async def delete_a_user(admin_username: str, uuid: str, db: Session) -> bool:
             )
 
         total = user_info.get("totalGB", user_info.get("total", 0)) or 0
-        used = (user_info.get("up", 0) or 0) + (user_info.get("down", 0) or 0)
-        traffic = total - used
-        if traffic < 0:
-            traffic = 0
+        _traffic_dict = user_info.get("traffic", {}) or {}
+        used = (_traffic_dict.get("up", 0) or 0) + (_traffic_dict.get("down", 0) or 0)
+        traffic = max(total - used, 0)
 
         delete_user = await admin_task.delete_client_from_panel(uuid)
 
@@ -1235,7 +1234,7 @@ async def delete_a_user(admin_username: str, uuid: str, db: Session) -> bool:
                 },
             )
 
-        traffic = user_info.get("data_limit", 0) - user_info.get("used_traffic", 0)
+        traffic = max(user_info.get("data_limit", 0) - user_info.get("used_traffic", 0), 0)
 
         delete_user = await admin_task.delete_user_from_panel(username)
 
@@ -1280,8 +1279,11 @@ async def delete_a_user(admin_username: str, uuid: str, db: Session) -> bool:
                 user_info = user
                 break
 
-        traffic = user_info.get("totalGB", 0) - (
-            user_info.get("up", 0) + user_info.get("down", 0)
+        _traffic_dict = user_info.get("traffic", {}) or {}
+        traffic = max(
+            user_info.get("totalGB", 0) - (
+                (_traffic_dict.get("up", 0) or 0) + (_traffic_dict.get("down", 0) or 0)
+            ), 0
         )
 
         delete_user = await admin_task.delete_client_from_panel(uuid)

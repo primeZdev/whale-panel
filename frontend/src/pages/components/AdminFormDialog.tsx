@@ -143,16 +143,35 @@ export function AdminFormDialog({
     }
 
     const handlePanelChange = (panelName: string) => {
-        setValue('panel', panelName)
         const selectedPanel = panels.find(p => p.name === panelName)
+        const panelType = selectedPanel?.panel_type
+        
+        setValue('panel', panelName)
 
         // Reset inbound selections
         setSelectedInbounds({})
         setMarzbanInbounds(null)
 
-        // Load inbounds if it's a Marzban panel
-        if (selectedPanel?.panel_type === 'marzban') {
+        // Handle guard panel special case
+        if (panelType === 'guard') {
+            // Set inbound_id to "1,2,3" automatically
+            setValue('inbound_id', '1,2,3')
+            // Set flow to null (empty)
+            setValue('flow', null)
+        } else if (panelType === 'marzban') {
+            // Load inbounds for marzban
             loadMarzbanInbounds(panelName)
+            // Reset inbound_id and flow for marzban
+            setValue('inbound_id', '')
+            setValue('flow', null)
+        } else if (panelType === '3x-ui' || panelType === 'tx-ui') {
+            // For 3x-ui and tx-ui, keep fields empty for user to fill
+            setValue('inbound_id', '')
+            setValue('flow', null)
+        } else {
+            // For other panel types
+            setValue('inbound_id', '')
+            setValue('flow', null)
         }
     }
 
@@ -226,6 +245,24 @@ export function AdminFormDialog({
             setServerError(error?.message || 'Operation failed')
         }
     }
+
+    const panelRequiresInboundFields = (panelType: string | undefined) => {
+        // Only show inbound fields for 3x-ui and tx-ui, hide for guard
+        return ['3x-ui', 'tx-ui'].includes(panelType || '')
+    }
+
+    // Get current panel type
+    const currentPanelType = panels.find(p => p.name === watch('panel'))?.panel_type
+    const shouldShowInboundFields = watch('panel') && panelRequiresInboundFields(currentPanelType)
+
+    // Ensure expiry input can be cleared to `null` (No Expiry)
+    const expiryRegister = register('expiry_date', {
+        setValueAs: (v: any) => {
+            if (v === '' || v === undefined || v === null) return null
+            const n = Number(v)
+            return Number.isNaN(n) ? null : Math.floor(n)
+        },
+    })
 
     return (
         <Dialog open={isOpen} onOpenChange={onClose}>
@@ -301,7 +338,7 @@ export function AdminFormDialog({
                     </div>
 
                     {/* Marzban Inbounds Selection */}
-                    {watch('panel') && panels.find(p => p.name === watch('panel'))?.panel_type === 'marzban' && (
+                    {currentPanelType === 'marzban' && (
                         <div className="space-y-2">
                             <Label>Marzban Inbounds *</Label>
                             {loadingInbounds ? (
@@ -339,54 +376,48 @@ export function AdminFormDialog({
                         </div>
                     )}
 
-                    {/* Inbound ID - Only for 3x-ui and tx-ui panels */}
-                    {watch('panel') &&
-                        ['3x-ui', 'tx-ui'].includes(
-                            panels.find(p => p.name === watch('panel'))?.panel_type ?? ''
-                        ) && (
-                            <div className="space-y-2">
-                                <Label htmlFor="inbound_id">Inbound ID</Label>
-                                <Input
-                                    id="inbound_id"
-                                    type="text"
-                                    placeholder="Optional"
-                                    disabled={isSubmitting}
-                                    {...register('inbound_id')}
-                                />
-                                {errors.inbound_id && (
-                                    <p className="text-sm text-destructive">
-                                        {errors.inbound_id.message}
-                                    </p>
-                                )}
-                            </div>
-                        )}
+                    {/* Inbound ID - Only for 3x-ui and tx-ui panels (not for guard) */}
+                    {shouldShowInboundFields && (
+                        <div className="space-y-2">
+                            <Label htmlFor="inbound_id">Inbound ID *</Label>
+                            <Input
+                                id="inbound_id"
+                                type="text"
+                                placeholder="Enter inbound ID"
+                                disabled={isSubmitting}
+                                {...register('inbound_id')}
+                            />
+                            {errors.inbound_id && (
+                                <p className="text-sm text-destructive">
+                                    {errors.inbound_id.message}
+                                </p>
+                            )}
+                        </div>
+                    )}
 
-                    {/* Flow - Only for 3x-ui and tx-ui panels */}
-                    {watch('panel') &&
-                        ['3x-ui', 'tx-ui'].includes(
-                            panels.find(p => p.name === watch('panel'))?.panel_type ?? ''
-                        ) && (
-                            <div className="space-y-2">
-                                <Label htmlFor="flow">Flow *</Label>
-                                <Select
-                                    value={watch('flow') ?? 'none'}
-                                    onValueChange={(val) => setValue('flow', val === 'none' ? null : val)}
-                                    disabled={isSubmitting}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select flow" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="none">None</SelectItem>
-                                        <SelectItem value="xtls-rprx-vision">xtls-rprx-vision</SelectItem>
-                                        <SelectItem value="xtls-rprx-vision-udp443">xtls-rprx-vision-udp443</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                {errors.flow && (
-                                    <p className="text-sm text-destructive">{errors.flow.message}</p>
-                                )}
-                            </div>
-                        )}
+                    {/* Flow - Only for 3x-ui and tx-ui panels (not for guard) */}
+                    {shouldShowInboundFields && (
+                        <div className="space-y-2">
+                            <Label htmlFor="flow">Flow *</Label>
+                            <Select
+                                value={watch('flow') ?? 'none'}
+                                onValueChange={(val) => setValue('flow', val === 'none' ? null : val)}
+                                disabled={isSubmitting}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Select flow" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">None</SelectItem>
+                                    <SelectItem value="xtls-rprx-vision">xtls-rprx-vision</SelectItem>
+                                    <SelectItem value="xtls-rprx-vision-udp443">xtls-rprx-vision-udp443</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            {errors.flow && (
+                                <p className="text-sm text-destructive">{errors.flow.message}</p>
+                            )}
+                        </div>
+                    )}
 
                     {/* Traffic */}
                     <div className="space-y-2">
@@ -415,7 +446,19 @@ export function AdminFormDialog({
                             step={1}
                             placeholder="Enter number of days (e.g. 10)"
                             disabled={isSubmitting}
-                            {...register('expiry_date', { valueAsNumber: true })}
+                            {...expiryRegister}
+                            onChange={(e) => {
+                                // Preserve react-hook-form's onChange
+                                try {
+                                    expiryRegister.onChange && expiryRegister.onChange(e)
+                                } catch (err) {
+                                    // ignore
+                                }
+                                // If user clears the input, explicitly set null
+                                if ((e.target as HTMLInputElement).value === '') {
+                                    setValue('expiry_date', null)
+                                }
+                            }}
                         />
                         {errors.expiry_date && (
                             <p className="text-sm text-destructive">{errors.expiry_date.message}</p>
