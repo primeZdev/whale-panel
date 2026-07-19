@@ -80,11 +80,18 @@ export const dashboardAPI = {
 
 export const botAPI = {
     getBotConfig: async (): Promise<{ token: string; admin_id: number; is_active: boolean }> => {
-        const response = await api.get<ResponseModel<{ token: string; admin_id: number; is_active: boolean }>>(`/superadmin/tgbot`)
-        if (!response.data.success) {
-            throw new Error(response.data.message || 'Failed to fetch bot config')
+        try {
+            const response = await api.get<ResponseModel<{ token: string; admin_id: number; is_active: boolean }>>(`/superadmin/tgbot`)
+            if (!response.data.success) {
+                throw new Error(response.data.message || 'Failed to fetch bot config')
+            }
+            return response.data.data || { token: '', admin_id: 0, is_active: false }
+        } catch (error: any) {
+            if (error.response?.status === 404) {
+                return { token: '', admin_id: 0, is_active: false }
+            }
+            throw error
         }
-        return response.data.data || { token: '', admin_id: 0, is_active: false }
     },
 
     updateBotConfig: async (config: { token: string; admin_id: number; is_active: boolean }): Promise<void> => {

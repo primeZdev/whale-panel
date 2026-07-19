@@ -7,7 +7,6 @@ import { DashboardPage } from '@/pages/DashboardPage'
 import { AdminsPage } from '@/pages/AdminsPage'
 import { PanelsPage } from '@/pages/PanelsPage'
 import { SettingsPage } from '@/pages/SettingsPage'
-import { BotPage } from '@/pages/BotPage'
 import { Menu, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
@@ -58,17 +57,6 @@ function App() {
                         <ProtectedRoute>
                             <Layout>
                                 <SettingsPage />
-                            </Layout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/bot"
-                    element={
-                        <ProtectedRoute>
-                            <Layout>
-                                <BotPage />
                             </Layout>
                         </ProtectedRoute>
                     }

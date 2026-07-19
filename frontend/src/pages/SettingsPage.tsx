@@ -333,58 +333,50 @@ export function SettingsPage() {
                     </CardContent>
                 </Card>
 
-                {/* Backup Box */}
+                {/* Backup & Restore Box */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
                             <Database className="h-5 w-5 text-blue-500" />
-                            Database Backup
+                            Database Backup & Restore
                         </CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Download a backup of the current database.
-                        </p>
-                        <Button
-                            onClick={handleDownloadBackup}
-                            disabled={backupLoading}
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                            <Download className="mr-2 h-4 w-4" />
-                            {backupLoading ? 'Downloading...' : 'Download Backup'}
-                        </Button>
-                    </CardContent>
-                </Card>
-
-                {/* Restore Box */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <RotateCcw className="h-5 w-5 text-amber-500" />
-                            Database Restore
-                        </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-muted-foreground mb-4">
-                            Restore database from a backup file.
-                        </p>
-                        <div className="space-y-2">
+                    <CardContent className="space-y-6">
+                        <div>
+                            <p className="text-sm text-muted-foreground mb-4">
+                                Download a backup of the current database or restore from a saved file.
+                            </p>
                             <Button
-                                onClick={() => document.getElementById('restore-file-input')?.click()}
-                                disabled={restoreLoading}
-                                className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                                onClick={handleDownloadBackup}
+                                disabled={backupLoading}
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                             >
-                                <Upload className="mr-2 h-4 w-4" />
-                                {restoreLoading ? 'Restoring...' : 'Select Backup File'}
+                                <Download className="mr-2 h-4 w-4" />
+                                {backupLoading ? 'Downloading...' : 'Download Backup'}
                             </Button>
-                            <Input
-                                id="restore-file-input"
-                                type="file"
-                                accept=".db"
-                                onChange={handleRestoreBackup}
-                                disabled={restoreLoading}
-                                className="hidden"
-                            />
+                        </div>
+                        <div className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                Restore the database from a `.db` backup file.
+                            </p>
+                            <div className="grid gap-3">
+                                <Button
+                                    onClick={() => document.getElementById('restore-file-input')?.click()}
+                                    disabled={restoreLoading}
+                                    className="w-full bg-amber-600 hover:bg-amber-700 text-white"
+                                >
+                                    <Upload className="mr-2 h-4 w-4" />
+                                    {restoreLoading ? 'Restoring...' : 'Select Backup File'}
+                                </Button>
+                                <Input
+                                    id="restore-file-input"
+                                    type="file"
+                                    accept=".db"
+                                    onChange={handleRestoreBackup}
+                                    disabled={restoreLoading}
+                                    className="hidden"
+                                />
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
