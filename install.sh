@@ -66,12 +66,12 @@ configure_env() {
     cp .env.example .env
     
     # Replace values in .env
-    sed -i "s/^ADMIN_USERNAME=.*/ADMIN_USERNAME=$ADMIN_USER/" .env
-    sed -i "s/^ADMIN_PASSWORD=.*/ADMIN_PASSWORD=$ADMIN_PASS/" .env
-    sed -i "s/^PORT=.*/PORT=$PANEL_PORT/" .env
-    sed -i "s/^URLPATH=.*/URLPATH=$URL_PATH/" .env
-    sed -i "s/^JWT_SECRET_KEY=.*/JWT_SECRET_KEY=\"$JWT_SECRET\"/" .env
-    sed -i "s/^PANEL_ADDRESS=.*/http://127.0.0.1:$PANEL_PORT/$URL_PATH/login/" .env
+    sed -i "s|^ADMIN_USERNAME=.*|ADMIN_USERNAME=$ADMIN_USER|" .env
+    sed -i "s|^ADMIN_PASSWORD=.*|ADMIN_PASSWORD=$ADMIN_PASS|" .env
+    sed -i "s|^PORT=.*|PORT=$PANEL_PORT|" .env
+    sed -i "s|^URLPATH=.*|URLPATH=$URL_PATH|" .env
+    sed -i "s|^JWT_SECRET_KEY=.*|JWT_SECRET_KEY=\"$JWT_SECRET\"|" .env
+    sed -i "s|^PANEL_ADDRESS=.*|PANEL_ADDRESS=\"http://127.0.0.1:$PANEL_PORT/$URL_PATH/login\"|" .env
 
     print_success "Configuration saved"
 }
