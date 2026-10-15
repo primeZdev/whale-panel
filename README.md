@@ -6,7 +6,7 @@
 
   # **Whale Panel**
   <p align="center">
-    <a href="https://t.me/primez_dev" target="_blank">
+    <a href="https://t.me/primezdev" target="_blank">
       <img src="https://img.shields.io/badge/Telegram-Channel-blue?style=for-the-badge&logo=telegram" alt="Telegram Channel">
     </a>
   <p align="center" dir="rtl">
@@ -97,7 +97,7 @@ Contributions are welcome! Feel free to open issues or submit pull requests.
 
 
 <div align="center">
-  <sub>Built with ❤️ by <a href="https://t.me/primez_dev">PrimeZ</a></sub>
+  <sub>Built with ❤️ by <a href="https://t.me/primezdev">PrimeZ</a></sub>
 </div>
 
 [![Stargazers over time](https://starchart.cc/primeZdev/whale-panel.svg?variant=adaptive)](https://starchart.cc/primeZdev/whale-panel)  
