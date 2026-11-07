@@ -327,3 +327,60 @@ def make_user_reseller(db, user: Users, admin: Admins):
     user.admin_id = admin.id
 
     db.commit()
+
+
+def change_setting_payment_enabled(db: Session, enabled: bool) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.payment_enabled = enabled
+        db.commit()
+        return True
+    return False
+
+
+def change_setting_card_payment_enabled(db: Session, enabled: bool) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.card_payment_enabled = enabled
+        db.commit()
+        return True
+    return False
+
+
+def change_setting_tron_payment_enabled(db: Session, enabled: bool) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.tron_payment_enabled = enabled
+        db.commit()
+        return True
+    return False
+
+
+def change_setting_usdt_payment_enabled(db: Session, enabled: bool) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.usdt_payment_enabled = enabled
+        db.commit()
+        return True
+    return False
+
+
+def change_setting_card_details(db: Session, card_number: str | None, card_holder: str | None) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.card_number = card_number
+        setting.card_holder = card_holder
+        db.commit()
+        return True
+    return False
+
+
+def change_setting_wallet_addresses(db: Session, wallet_address: str | None, tron_address: str | None, usdt_address: str | None) -> bool:
+    setting = db.query(Settings).first()
+    if setting:
+        setting.wallet_address = wallet_address
+        setting.tron_address = tron_address
+        setting.usdt_address = usdt_address
+        db.commit()
+        return True
+    return False

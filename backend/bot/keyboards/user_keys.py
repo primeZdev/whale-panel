@@ -23,29 +23,107 @@ def main_users_menu():
 
 
 def payment_methods_register():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
+    db = None
+    settings = None
+    try:
+        from backend.db.engin import sessionLocal
+        from backend.db import crud
+        db = sessionLocal()
+        settings = crud.get_all_settings(db)
+    finally:
+        if db is not None:
+            db.close()
+
+    buttons = []
+    if settings and settings.card_payment_enabled:
+        buttons.append(
             [
                 InlineKeyboardButton(
                     text="💳 کارت به کارت",
                     callback_data="user:register_pay_card",
                 )
             ]
-        ]
-    )
+        )
+    if settings and settings.tron_payment_enabled:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="🟡 TRON",
+                    callback_data="user:register_pay_tron",
+                )
+            ]
+        )
+    if settings and settings.usdt_payment_enabled:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="🪙 USDT",
+                    callback_data="user:register_pay_usdt",
+                )
+            ]
+        )
+    if not buttons:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="✅ بدون پرداخت",
+                    callback_data="user:request_for_register",
+                )
+            ]
+        )
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def payment_methods_buy():
-    return InlineKeyboardMarkup(
-        inline_keyboard=[
+    db = None
+    settings = None
+    try:
+        from backend.db.engin import sessionLocal
+        from backend.db import crud
+        db = sessionLocal()
+        settings = crud.get_all_settings(db)
+    finally:
+        if db is not None:
+            db.close()
+
+    buttons = []
+    if settings and settings.card_payment_enabled:
+        buttons.append(
             [
                 InlineKeyboardButton(
                     text="💳 کارت به کارت",
                     callback_data="user:buy_pay_card",
                 )
             ]
-        ]
-    )
+        )
+    if settings and settings.tron_payment_enabled:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="🟡 TRON",
+                    callback_data="user:buy_pay_tron",
+                )
+            ]
+        )
+    if settings and settings.usdt_payment_enabled:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="🪙 USDT",
+                    callback_data="user:buy_pay_usdt",
+                )
+            ]
+        )
+    if not buttons:
+        buttons.append(
+            [
+                InlineKeyboardButton(
+                    text="✅ بدون پرداخت",
+                    callback_data="user:buy_traffic",
+                )
+            ]
+        )
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def register_menu():

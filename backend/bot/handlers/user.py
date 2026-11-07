@@ -155,42 +155,6 @@ async def admin_register(callback: CallbackQuery):
     )
 
 
-@r.callback_query(F.data == "user:request_for_register")
-async def request_for_register(callback: CallbackQuery):
-    db = sessionLocal()
-
-    user = crud.get_user(db, callback.from_user.id)
-    settings = crud.get_all_settings(db)
-
-    if user.is_reseller:
-        await callback.answer(
-            "شما قبلاً نماینده هستید.",
-            show_alert=True,
-        )
-        return
-
-    if settings.start_price == 0:
-        await send_register_request(
-            callback.bot,
-            user,
-        )
-
-        await callback.message.edit_text(
-            "✅ درخواست شما با موفقیت ثبت شد.\n\n"
-            "پس از بررسی توسط مدیریت نتیجه برای شما ارسال خواهد شد."
-        )
-        return
-
-    await callback.message.edit_text(
-        text=(
-            f"💳 هزینه ثبت نمایندگی: <b>{settings.start_price:,}</b> تومان\n\n"
-            "روش پرداخت را انتخاب کنید."
-        ),
-        parse_mode="HTML",
-        reply_markup=payment_methods_register(),
-    )
-
-
 @r.callback_query(F.data == "user:register_pay_card")
 async def pay_register(callback: CallbackQuery, state: FSMContext):
     db = sessionLocal()
@@ -209,6 +173,36 @@ async def pay_register(callback: CallbackQuery, state: FSMContext):
         parse_mode="HTML",
     )
 
+    await state.set_state(RegisterState.waiting_receipt)
+
+
+@r.callback_query(F.data == "user:register_pay_tron")
+async def pay_register_tron(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    await callback.message.edit_text(
+        "🟡 <b>پرداخت TRON</b>\n\n"
+        f"💰 مبلغ: <b>{settings.start_price:,}</b> تومان\n\n"
+        f"📍 آدرس TRON:\n<code>{settings.tron_address or 'تنظیم نشده'}</code>\n\n"
+        "پس از واریز، رسید را ارسال کنید.",
+        parse_mode="HTML",
+        reply_markup=cancel_button(),
+    )
+    await state.set_state(RegisterState.waiting_receipt)
+
+
+@r.callback_query(F.data == "user:register_pay_usdt")
+async def pay_register_usdt(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    await callback.message.edit_text(
+        "🪙 <b>پرداخت USDT</b>\n\n"
+        f"💰 مبلغ: <b>{settings.start_price:,}</b> تومان\n\n"
+        f"📍 آدرس USDT:\n<code>{settings.usdt_address or 'تنظیم نشده'}</code>\n\n"
+        "پس از واریز، رسید را ارسال کنید.",
+        parse_mode="HTML",
+        reply_markup=cancel_button(),
+    )
     await state.set_state(RegisterState.waiting_receipt)
 
 
@@ -375,53 +369,163 @@ async def pay_card(callback: CallbackQuery, state: FSMContext):
     await state.set_state(BuyTrafficState.receipt)
 
 
-@r.message(BuyTrafficState.receipt, F.photo)
-async def receipt(message: Message, state: FSMContext):
+@r.callback_query(F.data == "user:buy_pay_tron")
+async def buy_pay_tron(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    data = await state.get_data()
+    await callback.message.edit_text(
+        "🟡 <b>پرداخت TRON</b>\n\n"
+        f"💰 مبلغ: <b>{data['price']:,}</b> تومان\n\n"
+        f"📍 آدرس TRON:\n<code>{settings.tron_address or 'تنظیم نشده'}</code>\n\n"
+        "پس از واریز، رسید را ارسال کنید.",
+        parse_mode="HTML",
+        reply_markup=cancel_button(),
+    )
+    await state.set_state(BuyTrafficState.receipt)
+
+
+@r.callback_query(F.data == "user:buy_pay_usdt")
+async def buy_pay_usdt(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    data = await state.get_data()
+    await callback.message.edit_text(
+        "🪙 <b>پرداخت USDT</b>\n\n"
+        f"💰 مبلغ: <b>{data['price']:,}</b> تومان\n\n"
+        f"📍 آدرس USDT:\n<code>{settings.usdt_address or 'تنظیم نشده'}</code>\n\n"
+        "پس از واریز، رسید را ارسال کنید.",
+        parse_mode="HTML",
+        reply_markup=cancel_button(),
+    )
+    await state.set_state(BuyTrafficState.receipt)
+
+
+@r.callback_query(F.data == "user:request_for_register")
+async def request_for_register(callback: CallbackQuery):
     db = sessionLocal()
 
-    data = await state.get_data()
+    user = crud.get_user(db, callback.from_user.id)
+    settings = crud.get_all_settings(db)
 
-    user = crud.get_user(db, message.from_user.id)
+    if user.is_reseller:
+        await callback.answer(
+            "شما قبلاً نماینده هستید.",
+            show_alert=True,
+        )
+        return
 
-    photo = message.photo[-1].file_id
+    if not settings.registration_enabled:
+        await callback.message.edit_text(
+            "❌ <b>ثبت‌نام نمایندگی موقتاً غیرفعال است.</b>\n\nپس از فعال شدن مجدداً اقدام نمایید.",
+            parse_mode="HTML",
+            reply_markup=main_users_menu(),
+        )
+        return
 
-    keyboard = InlineKeyboardMarkup(
-        inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text="✅ تایید",
-                    callback_data=f"admin:accept_buy:{user.chat_id}:{data['gb']}",
-                ),
-                InlineKeyboardButton(
-                    text="❌ رد",
-                    callback_data=f"admin:reject_buy:{user.chat_id}",
-                ),
-            ]
-        ]
-    )
+    if settings.start_price == 0:
+        await send_register_request(
+            callback.bot,
+            user,
+        )
 
-    caption = f"""
-🛒 خرید ترافیک
-👤 {user.name}
-🆔 <code>{user.chat_id}</code>
-📦 {data['gb']} GB
+        await callback.message.edit_text(
+            "✅ درخواست شما با موفقیت ثبت شد.\n\nپس از بررسی توسط مدیریت نتیجه برای شما ارسال خواهد شد.",
+            parse_mode="HTML",
+            reply_markup=main_users_menu(),
+        )
+        return
 
-💰 {data['price']:,} تومان
-"""
+    if not settings.payment_enabled:
+        await callback.answer("پرداخت‌ها در حال حاضر غیرفعال هستند.", show_alert=True)
+        return
 
-    await message.bot.send_photo(
-        ADMIN_ID,
-        photo=photo,
-        caption=caption,
+    await callback.message.edit_text(
+        text=(
+            f"💳 هزینه ثبت نمایندگی: <b>{settings.start_price:,}</b> تومان\n\n"
+            "روش پرداخت را انتخاب کنید."
+        ),
         parse_mode="HTML",
-        reply_markup=keyboard,
+        reply_markup=payment_methods_register(),
     )
 
-    await message.answer(
-        "✅ رسید ارسال شد.\nپس از تایید مدیریت، ترافیک شما افزایش خواهد یافت."
+
+@r.callback_query(F.data == "admin:accept_register")
+async def accept_register(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+
+    user = crud.get_user(db, callback.data.split(":")[-1])
+
+    crud.update_user(
+        db,
+        user,
+        is_reseller=True,
+        is_active=True,
     )
 
-    await state.clear()
+    await callback.answer("✅ نمایندگی فعال شد.")
+    await callback.message.delete()
+
+
+@r.callback_query(F.data == "admin:reject_register")
+async def reject_register(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+
+    user = crud.get_user(db, callback.data.split(":")[-1])
+
+    await callback.answer("❌ درخواست نمایندگی رد شد.")
+    await callback.message.delete()
+
+    if user.chat_id:
+        await callback.bot.send_message(
+            chat_id=user.chat_id,
+            text="❌ متاسفانه درخواست نمایندگی شما رد شد.",
+            parse_mode="HTML",
+        )
+
+
+@r.callback_query(F.data == "admin:accept_buy")
+async def accept_buy(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+
+    user = crud.get_user(db, callback.data.split(":")[-2])
+    gb = callback.data.split(":")[-1]
+
+    admin = crud.get_admin(db, user.admin_id)
+
+    if admin:
+        crud.update_admin_traffic(
+            db,
+            admin,
+            traffic=admin.traffic + int(gb) * 1024**3,
+        )
+
+    await callback.answer("✅ ترافیک خریداری شده تایید شد.")
+    await callback.message.delete()
+
+    if user.chat_id:
+        await callback.bot.send_message(
+            chat_id=user.chat_id,
+            text="✅ ترافیک خریداری شده شما با موفقیت تایید شد.",
+            parse_mode="HTML",
+        )
+
+
+@r.callback_query(F.data == "admin:reject_buy")
+async def reject_buy(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+
+    user = crud.get_user(db, callback.data.split(":")[-2])
+
+    await callback.answer("❌ خرید ترافیک رد شد.")
+    await callback.message.delete()
+
+    if user.chat_id:
+        await callback.bot.send_message(
+            chat_id=user.chat_id,
+            text="❌ متاسفانه خرید ترافیک شما رد شد.",
+            parse_mode="HTML",
+        )
 
 
 @r.callback_query(F.data == "user:help")
