@@ -1,17 +1,8 @@
+import { BarChart3, Github, LogOut, Moon, Server, Settings, Sun, Users } from 'lucide-react'
 import { useLocation, useNavigate } from 'react-router-dom'
-import {
-    BarChart3,
-    Users,
-    Settings,
-    LogOut,
-    Github,
-    Sun,
-    Moon,
-    Server,
-} from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { logout, getUserRole } from '@/lib/auth'
 import { cn } from '@/lib/utils'
+import { getUserRole, logout } from '@/lib/auth'
 import { useTheme } from '@/hooks/useTheme'
 
 interface SidebarProps {
@@ -45,42 +36,22 @@ const navigationItems = [
     },
 ]
 
-function ThemeToggleButton() {
-    const { theme, toggleTheme } = useTheme()
-
-    return (
-        <Button
-            variant="ghost"
-            className="w-full justify-start gap-3"
-            onClick={toggleTheme}
-        >
-            {theme === 'light' ? (
-                <Moon className="h-4 w-4" />
-            ) : (
-                <Sun className="h-4 w-4" />
-            )}
-            <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-        </Button>
-    )
-}
-
 export function Sidebar({ onItemClick }: SidebarProps) {
-    const location = useLocation()
     const navigate = useNavigate()
+    const location = useLocation()
     const userRole = getUserRole()
-
     const filteredItems = navigationItems.filter(item =>
-        userRole && item.roles.includes(userRole)
+        item.roles.includes(userRole ?? '')
     )
 
-    const handleLogout = () => {
-        logout()
-    }
-
     return (
-        <div className="flex flex-col h-full">
+        <div className="flex h-full flex-col">
+            <div className="border-b border-border/80 p-5">
+                <h1 className="mt-2 text-xl font-semibold tracking-tight">Whale Panel</h1>
+            </div>
+
             <nav className="flex-1 space-y-2 p-4">
-                {filteredItems.map((item) => {
+                {filteredItems.map(item => {
                     const Icon = item.icon
                     const isActive = location.pathname === item.href
 
@@ -89,8 +60,8 @@ export function Sidebar({ onItemClick }: SidebarProps) {
                             key={item.href}
                             variant={isActive ? 'default' : 'ghost'}
                             className={cn(
-                                'w-full justify-start gap-3',
-                                isActive && 'bg-primary'
+                                'w-full justify-start gap-3 rounded-xl px-3 text-sm font-medium',
+                                isActive && 'bg-primary text-primary-foreground shadow-sm'
                             )}
                             onClick={() => {
                                 navigate(item.href)
@@ -104,13 +75,19 @@ export function Sidebar({ onItemClick }: SidebarProps) {
                 })}
             </nav>
 
-            <div className="border-t p-4 space-y-2">
-                <ThemeToggleButton />
+            <div className="space-y-2 border-t border-border/80 p-4">
+                <ThemeModeToggle />
 
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3"
-                    onClick={() => window.open('https://github.com/primeZdev/whale-panel', '_blank')}
+                    className="w-full justify-start gap-3 rounded-xl"
+                    onClick={() =>
+                        window.open(
+                            'https://github.com/primeZdev/whale-panel',
+                            '_blank',
+                            'noopener,noreferrer'
+                        )
+                    }
                 >
                     <Github className="h-4 w-4" />
                     <span>GitHub</span>
@@ -118,13 +95,32 @@ export function Sidebar({ onItemClick }: SidebarProps) {
 
                 <Button
                     variant="ghost"
-                    className="w-full justify-start gap-3 text-destructive hover:text-destructive"
-                    onClick={handleLogout}
+                    className="w-full justify-start gap-3 rounded-xl text-destructive hover:text-destructive"
+                    onClick={logout}
                 >
                     <LogOut className="h-4 w-4" />
                     <span>Logout</span>
                 </Button>
             </div>
         </div>
+    )
+}
+
+function ThemeModeToggle() {
+    const { theme, toggleTheme } = useTheme()
+
+    return (
+        <Button
+            variant="ghost"
+            className="w-full justify-start gap-3 rounded-xl"
+            onClick={toggleTheme}
+        >
+            {theme === 'light' ? (
+                <Moon className="h-4 w-4" />
+            ) : (
+                <Sun className="h-4 w-4" />
+            )}
+            <span>{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
+        </Button>
     )
 }

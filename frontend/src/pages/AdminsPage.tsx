@@ -322,20 +322,46 @@ function AdminDetailsRow({
             {isExpanded && (
                 <TableRow className="bg-muted/30">
                     <TableCell colSpan={7}>
-                        <div className="py-4 space-y-3">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div>
-                                    <p className="text-muted-foreground">Inbound ID</p>
-                                    <p className="font-mono font-semibold">{admin.inbound_id || 'N/A'}</p>
+                        <div className="grid gap-3 py-4 md:grid-cols-2 xl:grid-cols-4">
+                            <div className="rounded-xl border border-border bg-card/80 p-3">
+                                <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Inbound</p>
+                                <p className="mt-2 font-mono text-sm font-semibold text-foreground">{admin.inbound_id || 'N/A'}</p>
+                            </div>
+                            <div className="rounded-xl border border-border bg-card/80 p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Return Traffic</p>
+                                    <span className={cn(
+                                        'h-2.5 w-2.5 rounded-full',
+                                        admin.update_return_traffic ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]' : 'bg-zinc-500'
+                                    )} />
                                 </div>
-                                <div>
-                                    <p className="text-muted-foreground">Update Return Traffic</p>
-                                    <p className="font-mono font-semibold">{admin.update_return_traffic ? 'Yes' : 'No'}</p>
+                                <p className="mt-2 text-sm font-medium text-foreground">
+                                    {admin.update_return_traffic ? 'On' : 'Off'}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-border bg-card/80 p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Delete Return</p>
+                                    <span className={cn(
+                                        'h-2.5 w-2.5 rounded-full',
+                                        admin.delete_return_traffic ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]' : 'bg-zinc-500'
+                                    )} />
                                 </div>
-                                <div>
-                                    <p className="text-muted-foreground">Delete Return Traffic</p>
-                                    <p className="font-mono font-semibold">{admin.delete_return_traffic ? 'Yes' : 'No'}</p>
+                                <p className="mt-2 text-sm font-medium text-foreground">
+                                    {admin.delete_return_traffic ? 'On' : 'Off'}
+                                </p>
+                            </div>
+                            <div className="rounded-xl border border-border bg-card/80 p-3">
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Account</p>
+                                    <span className={cn(
+                                        'h-2.5 w-2.5 rounded-full',
+                                        admin.is_active ? 'bg-emerald-400 shadow-[0_0_0_4px_rgba(52,211,153,0.15)]' : 'bg-red-400 shadow-[0_0_0_4px_rgba(248,113,113,0.15)]'
+                                    )} />
                                 </div>
+                                <p className="mt-2 text-sm font-medium text-foreground">
+                                    {admin.is_active ? 'Active' : 'Inactive'}
+                                </p>
                             </div>
                         </div>
                     </TableCell>
@@ -357,15 +383,14 @@ function MobileAdminCard({
     const remainingDays = calculateRemainingDays(admin.expiry_date)
 
     return (
-        <div className="border rounded-lg overflow-hidden">
-            {/* Compact View */}
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
             <button
                 onClick={onToggle}
                 className="w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
             >
                 <div className="flex-1 min-w-0">
                     <span className="font-medium text-sm truncate block">{admin.username}</span>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
                         <span className="text-xs text-muted-foreground">{admin.panel}</span>
                         <span className="text-xs text-muted-foreground">•</span>
                         <span className="text-xs text-muted-foreground">
@@ -388,47 +413,51 @@ function MobileAdminCard({
                 </div>
             </button>
 
-            {/* Expanded View */}
             {isExpanded && (
                 <div className="border-t p-3 space-y-3 bg-muted/30">
                     <div className="grid grid-cols-2 gap-3 text-sm">
-                        <div>
-                            <p className="text-xs text-muted-foreground">Traffic</p>
-                            <p className="font-mono font-medium">
+                        <div className="rounded-lg border border-border bg-card/80 p-2.5">
+                            <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Traffic</p>
+                            <p className="mt-1 font-mono font-medium text-foreground">
                                 {admin.initial_traffic !== undefined
                                     ? `${bytesToGB(admin.traffic).toFixed(2)} / ${bytesToGB(admin.initial_traffic).toFixed(2)} GB`
                                     : `${bytesToGB(admin.traffic).toFixed(2)} GB`}
                             </p>
                         </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground">Expiry</p>
+                        <div className="rounded-lg border border-border bg-card/80 p-2.5">
+                            <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Expiry</p>
                             {admin.expiry_date ? (
-                                <div>
-                                    <p className="font-medium">{formatDate(admin.expiry_date)}</p>
+                                <div className="mt-1">
+                                    <p className="font-medium text-foreground">{formatDate(admin.expiry_date)}</p>
                                     {remainingDays !== null && (
-                                        <span className={cn(
-                                            'text-xs',
-                                            remainingDays < 30 ? 'text-destructive' : 'text-muted-foreground'
-                                        )}>
+                                        <span className={cn('text-xs', remainingDays < 30 ? 'text-destructive' : 'text-muted-foreground')}>
                                             {remainingDays} days left
                                         </span>
                                     )}
                                 </div>
                             ) : (
-                                <span className="text-muted-foreground">No expiry</span>
+                                <span className="mt-1 block text-muted-foreground">No expiry</span>
                             )}
                         </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground">Inbound ID</p>
-                            <p className="font-mono font-medium">{admin.inbound_id || 'N/A'}</p>
+                        <div className="rounded-lg border border-border bg-card/80 p-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Return</p>
+                                <span className={cn(
+                                    'h-2.5 w-2.5 rounded-full',
+                                    admin.update_return_traffic ? 'bg-emerald-400' : 'bg-zinc-500'
+                                )} />
+                            </div>
+                            <p className="mt-1 text-foreground">{admin.update_return_traffic ? 'On' : 'Off'}</p>
                         </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground">Update Return Traffic</p>
-                            <p className="font-medium">{admin.update_return_traffic ? 'Yes' : 'No'}</p>
-                        </div>
-                        <div>
-                            <p className="text-xs text-muted-foreground">Delete Return Traffic</p>
-                            <p className="font-medium">{admin.delete_return_traffic ? 'Yes' : 'No'}</p>
+                        <div className="rounded-lg border border-border bg-card/80 p-2.5">
+                            <div className="flex items-center justify-between gap-2">
+                                <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Delete</p>
+                                <span className={cn(
+                                    'h-2.5 w-2.5 rounded-full',
+                                    admin.delete_return_traffic ? 'bg-emerald-400' : 'bg-zinc-500'
+                                )} />
+                            </div>
+                            <p className="mt-1 text-foreground">{admin.delete_return_traffic ? 'On' : 'Off'}</p>
                         </div>
                     </div>
 

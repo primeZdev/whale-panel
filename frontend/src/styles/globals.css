@@ -4,79 +4,93 @@
 
 @layer base {
     :root {
-        --background: 210 40% 96%;
-        --foreground: 210 40% 10%;
+        --background: 220 33% 98%;
+        --foreground: 222 47% 11%;
         --card: 0 0% 100%;
-        --card-foreground: 210 40% 10%;
+        --card-foreground: 222 47% 11%;
         --popover: 0 0% 100%;
-        --popover-foreground: 210 40% 10%;
-        --muted: 210 30% 92%;
-        --muted-foreground: 210 20% 45%;
-        --accent: 201 96% 32%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 100%;
-        --border: 210 30% 82%;
-        --input: 210 30% 85%;
-        --primary: 201 96% 32%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 210 30% 92%;
-        --secondary-foreground: 210 40% 10%;
-        --ring: 201 96% 32%;
-        --radius: 0.5rem;
+        --popover-foreground: 222 47% 11%;
+        --primary: 221 83% 53%;
+        --primary-foreground: 210 40% 98%;
+        --secondary: 210 40% 96%;
+        --secondary-foreground: 222 47% 11%;
+        --muted: 210 40% 96%;
+        --muted-foreground: 215 16% 47%;
+        --accent: 210 40% 96%;
+        --accent-foreground: 222 47% 11%;
+        --destructive: 0 72% 51%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 214 32% 91%;
+        --input: 214 32% 91%;
+        --ring: 221 83% 53%;
+        --radius: 0.9rem;
     }
 
     .dark {
-        --background: 220 20% 4%;
+        --background: 225 18% 8%;
         --foreground: 210 40% 98%;
-        --card: 220 20% 7%;
+        --card: 224 18% 12%;
         --card-foreground: 210 40% 98%;
-        --popover: 220 20% 7%;
+        --popover: 224 18% 12%;
         --popover-foreground: 210 40% 98%;
-        --muted: 220 20% 12%;
-        --muted-foreground: 210 20% 65%;
-        --accent: 201 96% 40%;
-        --accent-foreground: 0 0% 100%;
-        --destructive: 0 84% 60%;
-        --destructive-foreground: 0 0% 100%;
-        --border: 220 20% 14%;
-        --input: 220 20% 14%;
-        --primary: 201 96% 40%;
-        --primary-foreground: 0 0% 100%;
-        --secondary: 220 20% 12%;
+        --primary: 219 92% 60%;
+        --primary-foreground: 224 20% 9%;
+        --secondary: 220 18% 16%;
         --secondary-foreground: 210 40% 98%;
-        --ring: 201 96% 40%;
+        --muted: 220 18% 16%;
+        --muted-foreground: 215 18% 72%;
+        --accent: 220 18% 16%;
+        --accent-foreground: 210 40% 98%;
+        --destructive: 0 72% 52%;
+        --destructive-foreground: 210 40% 98%;
+        --border: 220 20% 18%;
+        --input: 220 18% 16%;
+        --ring: 219 92% 60%;
     }
-}
 
-@layer base {
     * {
         @apply border-border;
     }
 
-    html,
+    html {
+        scroll-behavior: smooth;
+    }
+
     body {
-        @apply bg-background text-foreground overflow-x-hidden;
-        max-width: 100vw;
+        @apply min-h-screen bg-background text-foreground antialiased;
+        background:
+            radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 28%),
+            radial-gradient(circle at bottom right, rgba(168,85,247,0.09), transparent 24%),
+            hsl(var(--background));
+    }
+
+    #root {
+        @apply min-h-screen;
+    }
+}
+
+@layer components {
+    .panel-surface {
+        @apply rounded-2xl border border-white/10 bg-card/75 shadow-[0_18px_40px_rgba(15,23,42,0.22)] backdrop-blur-xl;
     }
 }
 
 /* Scrollbar styling */
 ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+    width: 10px;
+    height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-    @apply bg-muted;
+    background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-    @apply bg-muted-foreground rounded;
+    @apply rounded-full bg-muted-foreground/30;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/80;
+    @apply bg-muted-foreground/45;
 }
 
 
