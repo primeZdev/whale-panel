@@ -201,8 +201,13 @@ export interface PanelOutput {
 export const userSchema = z.object({
     email: z
         .string()
+        .trim()
         .min(1, 'Username/Email is required')
-        .max(100, 'Maximum 100 characters'),
+        .max(100, 'Maximum 100 characters')
+        .regex(
+            /^[\p{L}\p{N}\s@._-]+$/u,
+            'Use Persian/English letters, numbers, spaces, and common punctuation only'
+        ),
 
     totalGb: z
         .number()

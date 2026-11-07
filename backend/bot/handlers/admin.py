@@ -10,6 +10,8 @@ from backend.bot.keyboards.admin_keys import (
     show_panel_selection,
     cancel_button,
     settings_menu,
+    payment_method_settings_menu,
+    payment_details_menu,
 )
 from backend.db import crud
 from backend.db.engin import sessionLocal
@@ -33,6 +35,13 @@ class RegisterAdminState(StatesGroup):
 
 class SendBroadcast(StatesGroup):
     message = State()
+
+
+class PaymentMethodState(StatesGroup):
+    card_number = State()
+    card_holder = State()
+    tron_address = State()
+    usdt_address = State()
 
 
 @r.callback_query(F.data == "admin:cancel")
@@ -295,7 +304,7 @@ async def get_password(message: Message, state: FSMContext):
     )
 
     await message.answer(
-        "✅ نماینده با موفقیت ایجاد و اطلاعات ورود به پنل ارسال شد، حالا نیازه یکبار از طریق داشبورد مدیریت یکبار ادمین ایجاد شده را ادیت و درصورت لزوم اینباند های مخصوصش رو ادیت کنید!."
+        "✅ نماینده با موفقیت ایجاد و اطلاعات ورود به پنل ارسال شد، حالا نیازه از طریق داشبورد مدیریت یکبار ادمین ایجاد شده را ادیت و درصورت لزوم اینباند های مخصوصش رو ادیت کنید!.#مهم \n#مهم"
     )
 
     await state.clear()
@@ -397,3 +406,160 @@ async def send_broadcast(message: Message, state: FSMContext):
     )
 
     await state.finish()
+
+
+@r.callback_query(F.data == "admin:set_payment_methods")
+async def set_payment_methods(callback: CallbackQuery, state: FSMContext):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+
+    text = (
+        "💳 <b>تنظیم روش‌های پرداخت</b>\n\n"
+        f"💳 کارت به کارت: {'✅ فعال' if settings.card_payment_enabled else '❌ غیرفعال'}\n"
+        f"🟡 TRON: {'✅ فعال' if settings.tron_payment_enabled else '❌ غیرفعال'}\n"
+        f"🪙 USDT: {'✅ فعال' if settings.usdt_payment_enabled else '❌ غیرفعال'}\n\n"
+        f"💳 شماره کارت: <code>{settings.card_number or '-'}</code>\n"
+        f"👤 صاحب کارت: <code>{settings.card_holder or '-'}</code>\n"
+        f"🟡 آدرس TRON: <code>{settings.tron_address or '-'}</code>\n"
+        f"🪙 آدرس USDT: <code>{settings.usdt_address or '-'}</code>"
+    )
+    await callback.message.answer(text=text, parse_mode="HTML", reply_markup=payment_method_settings_menu())
+
+
+@r.callback_query(F.data == "admin:toggle_card_payment")
+async def toggle_card_payment(callback: CallbackQuery):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    enabled = not (settings.card_payment_enabled or False)
+    crud.change_setting_card_payment_enabled(db, enabled)
+    await callback.answer(f"کارت به کارت {'فعال' if enabled else 'غیرفعال'} شد.")
+    updated = crud.get_all_settings(db)
+    await callback.message.edit_text(
+        text=(
+            "💳 <b>تنظیم روش‌های پرداخت</b>\n\n"
+            f"💳 کارت به کارت: {'✅ فعال' if updated.card_payment_enabled else '❌ غیرفعال'}\n"
+            f"🟡 TRON: {'✅ فعال' if updated.tron_payment_enabled else '❌ غیرفعال'}\n"
+            f"🪙 USDT: {'✅ فعال' if updated.usdt_payment_enabled else '❌ غیرفعال'}\n\n"
+            f"💳 شماره کارت: <code>{updated.card_number or '-'}</code>\n"
+            f"👤 صاحب کارت: <code>{updated.card_holder or '-'}</code>\n"
+            f"🟡 آدرس TRON: <code>{updated.tron_address or '-'}</code>\n"
+            f"🪙 آدرس USDT: <code>{updated.usdt_address or '-'}</code>"
+        ),
+        parse_mode="HTML",
+        reply_markup=payment_method_settings_menu(),
+    )
+
+
+@r.callback_query(F.data == "admin:toggle_tron_payment")
+async def toggle_tron_payment(callback: CallbackQuery):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    enabled = not (settings.tron_payment_enabled or False)
+    crud.change_setting_tron_payment_enabled(db, enabled)
+    await callback.answer(f"TRON {'فعال' if enabled else 'غیرفعال'} شد.")
+    updated = crud.get_all_settings(db)
+    await callback.message.edit_text(
+        text=(
+            "💳 <b>تنظیم روش‌های پرداخت</b>\n\n"
+            f"💳 کارت به کارت: {'✅ فعال' if updated.card_payment_enabled else '❌ غیرفعال'}\n"
+            f"🟡 TRON: {'✅ فعال' if updated.tron_payment_enabled else '❌ غیرفعال'}\n"
+            f"🪙 USDT: {'✅ فعال' if updated.usdt_payment_enabled else '❌ غیرفعال'}\n\n"
+            f"💳 شماره کارت: <code>{updated.card_number or '-'}</code>\n"
+            f"👤 صاحب کارت: <code>{updated.card_holder or '-'}</code>\n"
+            f"🟡 آدرس TRON: <code>{updated.tron_address or '-'}</code>\n"
+            f"🪙 آدرس USDT: <code>{updated.usdt_address or '-'}</code>"
+        ),
+        parse_mode="HTML",
+        reply_markup=payment_method_settings_menu(),
+    )
+
+
+@r.callback_query(F.data == "admin:toggle_usdt_payment")
+async def toggle_usdt_payment(callback: CallbackQuery):
+    db = sessionLocal()
+    settings = crud.get_all_settings(db)
+    enabled = not (settings.usdt_payment_enabled or False)
+    crud.change_setting_usdt_payment_enabled(db, enabled)
+    await callback.answer(f"USDT {'فعال' if enabled else 'غیرفعال'} شد.")
+    updated = crud.get_all_settings(db)
+    await callback.message.edit_text(
+        text=(
+            "💳 <b>تنظیم روش‌های پرداخت</b>\n\n"
+            f"💳 کارت به کارت: {'✅ فعال' if updated.card_payment_enabled else '❌ غیرفعال'}\n"
+            f"🟡 TRON: {'✅ فعال' if updated.tron_payment_enabled else '❌ غیرفعال'}\n"
+            f"🪙 USDT: {'✅ فعال' if updated.usdt_payment_enabled else '❌ غیرفعال'}\n\n"
+            f"💳 شماره کارت: <code>{updated.card_number or '-'}</code>\n"
+            f"👤 صاحب کارت: <code>{updated.card_holder or '-'}</code>\n"
+            f"🟡 آدرس TRON: <code>{updated.tron_address or '-'}</code>\n"
+            f"🪙 آدرس USDT: <code>{updated.usdt_address or '-'}</code>"
+        ),
+        parse_mode="HTML",
+        reply_markup=payment_method_settings_menu(),
+    )
+
+
+@r.callback_query(F.data == "admin:toggle_payment_method")
+async def toggle_payment_method(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer("⚙️ روش‌های پرداخت فعال/غیرفعال شدند.", reply_markup=main_menu())
+    await state.clear()
+
+
+@r.callback_query(F.data == "admin:set_payment_details")
+async def set_payment_details(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer(
+        "📌 لطفاً یکی از گزینه‌ها را انتخاب کنید:\n\n1️⃣ شماره کارت و صاحب کارت\n2️⃣ آدرس TRON\n3️⃣ آدرس USDT",
+        reply_markup=payment_details_menu(),
+    )
+    await state.clear()
+
+
+@r.callback_query(F.data == "admin:set_card_details")
+async def set_card_details(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer("💳 شماره کارت را وارد کنید:")
+    await state.set_state(PaymentMethodState.card_number)
+
+
+@r.message(PaymentMethodState.card_number)
+async def receive_card_number(message: Message, state: FSMContext):
+    await state.update_data(card_number=message.text.strip())
+    await message.answer("👤 صاحب کارت را وارد کنید:")
+    await state.set_state(PaymentMethodState.card_holder)
+
+
+@r.message(PaymentMethodState.card_holder)
+async def receive_card_holder(message: Message, state: FSMContext):
+    data = await state.get_data()
+    db = sessionLocal()
+    crud.change_setting_card_details(db, data.get("card_number"), message.text.strip())
+    await message.answer("✅ اطلاعات کارت ثبت شد.", reply_markup=main_menu())
+    await state.clear()
+
+
+@r.callback_query(F.data == "admin:set_tron_address")
+async def set_tron_address(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer("🟡 آدرس TRON را وارد کنید:")
+    await state.set_state(PaymentMethodState.tron_address)
+
+
+@r.message(PaymentMethodState.tron_address)
+async def receive_tron_address(message: Message, state: FSMContext):
+    db = sessionLocal()
+    setting = crud.get_all_settings(db)
+    crud.change_setting_wallet_addresses(db, setting.wallet_address, message.text.strip(), setting.usdt_address)
+    await message.answer("✅ آدرس TRON ثبت شد.", reply_markup=main_menu())
+    await state.clear()
+
+
+@r.callback_query(F.data == "admin:set_usdt_address")
+async def set_usdt_address(callback: CallbackQuery, state: FSMContext):
+    await callback.message.answer("🪙 آدرس USDT را وارد کنید:")
+    await state.set_state(PaymentMethodState.usdt_address)
+
+
+@r.message(PaymentMethodState.usdt_address)
+async def receive_usdt_address(message: Message, state: FSMContext):
+    db = sessionLocal()
+    setting = crud.get_all_settings(db)
+    crud.change_setting_wallet_addresses(db, setting.wallet_address, setting.tron_address, message.text.strip())
+    await message.answer("✅ آدرس USDT ثبت شد.", reply_markup=main_menu())
+    await state.clear()

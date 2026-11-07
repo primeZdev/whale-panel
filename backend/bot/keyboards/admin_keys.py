@@ -43,6 +43,11 @@ def settings_menu():
             ],
             [
                 InlineKeyboardButton(
+                    text="💳 تنظیم روش‌های پرداخت", callback_data="admin:set_payment_methods"
+                )
+            ],
+            [
+                InlineKeyboardButton(
                     text="💬 ارسال پیام همگانی", callback_data="admin:send_broadcast"
                 )
             ],
@@ -65,7 +70,7 @@ def show_panel_selection(panels):
         inline_keyboard=[
             [
                 InlineKeyboardButton(
-                    text=f"{panel.name} - {panel.panel_type} - {"✅" if panel.for_bot else "❌"}",
+                    text=f"{panel.name} - {panel.panel_type} - {'✅' if panel.for_bot else '❌'}",
                     callback_data=f"admin:panel_selected:{panel.id}",
                 )
             ]
@@ -73,3 +78,53 @@ def show_panel_selection(panels):
         ]
     )
     return keyboard
+
+
+def payment_method_settings_menu():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="💳 کارت به کارت",
+                    callback_data="admin:toggle_card_payment",
+                ),
+                InlineKeyboardButton(
+                    text="🟡 TRON", callback_data="admin:toggle_tron_payment"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🪙 USDT", callback_data="admin:toggle_usdt_payment"
+                ),
+                InlineKeyboardButton(
+                    text="📝 تنظیم اطلاعات", callback_data="admin:set_payment_details"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🔙 بازگشت", callback_data="admin:settings"
+                )
+            ],
+        ]
+    )
+
+
+def payment_details_menu():
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(
+                    text="💳 شماره کارت", callback_data="admin:set_card_details"
+                ),
+                InlineKeyboardButton(
+                    text="🟡 آدرس TRON", callback_data="admin:set_tron_address"
+                ),
+            ],
+            [
+                InlineKeyboardButton(
+                    text="🪙 آدرس USDT", callback_data="admin:set_usdt_address"
+                ),
+                InlineKeyboardButton(text="🔙 بازگشت", callback_data="admin:set_payment_methods"),
+            ],
+        ]
+    )

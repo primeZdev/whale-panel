@@ -19,6 +19,10 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
             if (valid && allowedRoles && allowedRoles.length > 0) {
                 const userRole = getUserRole()
                 setHasAccess(userRole !== null && allowedRoles.includes(userRole))
+            } else if (valid) {
+                setHasAccess(true)
+            } else {
+                setHasAccess(false)
             }
         }
 
@@ -27,7 +31,7 @@ export function ProtectedRoute({ children, allowedRoles }: ProtectedRouteProps) 
 
     if (isValid === null) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
+            <div className="flex min-h-screen items-center justify-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
         )

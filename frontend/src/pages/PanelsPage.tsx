@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react'
 import {
-    ChevronDown,
     Plus,
     Edit2,
     Trash2,
     ToggleLeft,
     ToggleRight,
-    Copy,
 } from 'lucide-react'
 import { panelAPI, dashboardAPI } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { PanelOutput } from '@/types'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import {
     Table,
     TableBody,
@@ -169,7 +166,6 @@ export function PanelsPage() {
                                             <TableHead className="w-12"></TableHead>
                                             <TableHead>Name</TableHead>
                                             <TableHead>Type</TableHead>
-                                            <TableHead>URL</TableHead>
                                             <TableHead>Status</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
                                         </TableRow>
@@ -179,13 +175,6 @@ export function PanelsPage() {
                                             <PanelDetailsRow
                                                 key={panel.id}
                                                 panel={panel}
-                                                isExpanded={expandedRows[panel.id.toString()] || false}
-                                                onToggle={() => {
-                                                    setExpandedRows(prev => ({
-                                                        ...prev,
-                                                        [panel.id.toString()]: !prev[panel.id.toString()],
-                                                    }))
-                                                }}
                                                 onEdit={() => {
                                                     setSelectedPanel(panel)
                                                     setShowPanelDialog(true)
@@ -249,44 +238,34 @@ interface PanelDetailsRowProps {
 
 function PanelDetailsRow({
     panel,
-    isExpanded,
-    onToggle,
     onEdit,
     onDelete,
     onToggleStatus,
-}: PanelDetailsRowProps) {
+}: Omit<PanelDetailsRowProps, 'isExpanded' | 'onToggle'>) {
     return (
         <>
             <TableRow>
+                <TableCell className="w-0"></TableCell>
+                <TableCell className="font-semibold text-foreground">{panel.name}</TableCell>
                 <TableCell>
-                    <button
-                        onClick={onToggle}
-                        className="p-1 hover:bg-muted rounded"
-                    >
-                        <ChevronDown
-                            className={cn(
-                                'h-4 w-4 transition-transform',
-                                isExpanded && 'transform rotate-180'
-                            )}
-                        />
-                    </button>
-                </TableCell>
-                <TableCell className="font-semibold">{panel.name}</TableCell>
-                <TableCell>
-                    <Badge variant="outline">{panel.panel_type}</Badge>
-                </TableCell>
-                <TableCell className="max-w-xs truncate text-sm font-mono">
-                    {panel.url}
+                    <span className="inline-flex rounded-full border border-border bg-muted/40 px-2.5 py-1 text-xs font-medium text-muted-foreground">
+                        {panel.panel_type}
+                    </span>
                 </TableCell>
                 <TableCell>
-                    <Badge variant={panel.is_active ? 'default' : 'destructive'}>
+                    <span className={cn(
+                        'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold',
+                        panel.is_active
+                            ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                            : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/30'
+                    )}>
                         {panel.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
+                    </span>
                 </TableCell>
-                <TableCell className="text-right space-x-2">
+                <TableCell className="space-x-2 text-right">
                     <Button size="sm" variant="ghost" onClick={onToggleStatus}>
                         {panel.is_active ? (
-                            <ToggleRight className="h-4 w-4 text-green-600" />
+                            <ToggleRight className="h-4 w-4 text-emerald-400" />
                         ) : (
                             <ToggleLeft className="h-4 w-4 text-muted-foreground" />
                         )}
@@ -295,34 +274,10 @@ function PanelDetailsRow({
                         <Edit2 className="h-4 w-4" />
                     </Button>
                     <Button size="sm" variant="ghost" onClick={onDelete}>
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                 </TableCell>
             </TableRow>
-
-            {isExpanded && (
-                <TableRow className="bg-muted/30">
-                    <TableCell colSpan={6}>
-                        <div className="py-4 space-y-3">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                <div>
-                                    <p className="text-muted-foreground">Panel URL</p>
-                                    <p className="font-mono break-all text-xs">{panel.url}</p>
-                                    <Button
-                                        size="xs"
-                                        variant="outline"
-                                        className="mt-2"
-                                        onClick={() => navigator.clipboard.writeText(panel.url)}
-                                    >
-                                        <Copy className="h-3 w-3 mr-1" />
-                                        Copy
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                    </TableCell>
-                </TableRow>
-            )}
         </>
     )
 }
@@ -337,50 +292,38 @@ function MobilePanelCard({
     onToggleStatus,
 }: PanelDetailsRowProps) {
     return (
-        <div className="border rounded-lg overflow-hidden">
-            {/* Compact View */}
+        <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-sm">
             <button
                 onClick={onToggle}
-                className="w-full p-3 flex items-center gap-3 hover:bg-muted/50 transition-colors text-left"
+                className="flex w-full items-center gap-3 p-3 text-left transition-colors hover:bg-muted/40"
             >
-                <div className="flex-1 min-w-0">
-                    <span className="font-medium text-sm truncate block">{panel.name}</span>
-                    <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">{panel.panel_type}</Badge>
+                <div className="min-w-0 flex-1">
+                    <span className="block truncate text-sm font-semibold text-foreground">{panel.name}</span>
+                    <div className="mt-1 flex items-center gap-2">
+                        <span className="inline-flex rounded-full border border-border bg-muted/40 px-2 py-0.5 text-[10px] font-medium text-muted-foreground">
+                            {panel.panel_type}
+                        </span>
                     </div>
                 </div>
 
-                <div className="flex flex-col items-end gap-1 shrink-0">
-                    <Badge variant={panel.is_active ? 'default' : 'destructive'} className="text-xs">
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span className={cn(
+                        'inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold',
+                        panel.is_active
+                            ? 'bg-emerald-500/15 text-emerald-400 ring-1 ring-emerald-500/30'
+                            : 'bg-red-500/10 text-red-400 ring-1 ring-red-500/30'
+                    )}>
                         {panel.is_active ? 'Active' : 'Inactive'}
-                    </Badge>
-                    <ChevronDown
-                        className={cn(
-                            'h-4 w-4 text-muted-foreground transition-transform',
-                            isExpanded && 'transform rotate-180'
-                        )}
-                    />
+                    </span>
                 </div>
             </button>
 
-            {/* Expanded View */}
             {isExpanded && (
-                <div className="border-t p-3 space-y-3 bg-muted/30">
-                    <div className="text-sm">
-                        <p className="text-xs text-muted-foreground">Panel URL</p>
-                        <p className="font-mono text-xs break-all mt-1">{panel.url}</p>
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="mt-2"
-                            onClick={(e) => {
-                                e.stopPropagation()
-                                navigator.clipboard.writeText(panel.url)
-                            }}
-                        >
-                            <Copy className="h-3 w-3 mr-1" />
-                            Copy URL
-                        </Button>
+                <div className="space-y-3 border-t border-border/80 bg-muted/20 p-3">
+                    <div className="rounded-xl border border-border bg-card p-3 text-sm">
+                        <p className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">Panel</p>
+                        <p className="mt-1 font-medium text-foreground">{panel.name}</p>
+                        <p className="mt-1 text-muted-foreground">{panel.panel_type}</p>
                     </div>
 
                     <div className="flex flex-wrap gap-2 pt-1">
@@ -389,14 +332,14 @@ function MobilePanelCard({
                             variant="outline"
                             className="flex-1 min-w-[70px]"
                             onClick={(e) => {
-                                e.stopPropagation()
-                                onToggleStatus()
+                                e.stopPropagation();
+                                onToggleStatus();
                             }}
                         >
                             {panel.is_active ? (
-                                <ToggleRight className="h-3 w-3 mr-1 text-green-600" />
+                                <ToggleRight className="mr-1 h-3 w-3 text-emerald-400" />
                             ) : (
-                                <ToggleLeft className="h-3 w-3 mr-1" />
+                                <ToggleLeft className="mr-1 h-3 w-3" />
                             )}
                             {panel.is_active ? 'Disable' : 'Enable'}
                         </Button>
@@ -405,11 +348,11 @@ function MobilePanelCard({
                             variant="outline"
                             className="flex-1 min-w-[70px]"
                             onClick={(e) => {
-                                e.stopPropagation()
-                                onEdit()
+                                e.stopPropagation();
+                                onEdit();
                             }}
                         >
-                            <Edit2 className="h-3 w-3 mr-1" />
+                            <Edit2 className="mr-1 h-3 w-3" />
                             Edit
                         </Button>
                         <Button
@@ -417,11 +360,11 @@ function MobilePanelCard({
                             variant="destructive"
                             className="flex-1 min-w-[70px]"
                             onClick={(e) => {
-                                e.stopPropagation()
-                                onDelete()
+                                e.stopPropagation();
+                                onDelete();
                             }}
                         >
-                            <Trash2 className="h-3 w-3 mr-1" />
+                            <Trash2 className="mr-1 h-3 w-3" />
                             Delete
                         </Button>
                     </div>
